@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS jobs (
     source      TEXT,
     notes       TEXT,
     applied_at  DATE,
+    posted_at   DATE,
+    apply_by    DATE,
+    responsibilities TEXT,
+    requirements TEXT,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT jobs_status_check CHECK (
