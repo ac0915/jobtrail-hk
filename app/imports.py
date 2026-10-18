@@ -4,8 +4,9 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+from datetime import date, datetime
 from html.parser import HTMLParser
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import parse_qs, urlparse
 
 import httpx
@@ -77,12 +78,103 @@ def clean_text(value, max_length=200):
     return result if result and len(result) <= max_length else None
 
 
+def clean_long_text(value, max_length=20000):
+    if not isinstance(value, str):
+        return None
+    parser = TextParser()
+    parser.feed(value)
+    result = " ".join("".join(parser.parts).split()).strip()
+    if not result:
+        return None
+    if len(result) > max_length:
+        result = result[: max_length - 1].rstrip() + "…"
+    return result
+
+
+def parse_date(value) -> Optional[str]:
+    """Return YYYY-MM-DD string or None."""
+    if value is None:
+        return None
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    for fmt in (
+        "%Y-%m-%d",
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+    ):
+        try:
+            parsed = datetime.strptime(
+                text.replace("+00:00", "Z") if text.endswith("+00:00") else text,
+                fmt,
+            )
+            return parsed.date().isoformat()
+        except ValueError:
+            continue
+    try:
+        normalized = text.replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(normalized)
+        return parsed.date().isoformat()
+    except ValueError:
+        pass
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text[:10]):
+        return text[:10]
+    return None
+
+
 def nested(data, *keys):
     for key in keys:
         if not isinstance(data, dict):
             return None
         data = data.get(key)
     return data
+
+
+def extract_sections_from_html(html_content: str) -> tuple[Optional[str], Optional[str]]:
+    """Split JobsDB content HTML into responsibilities / requirements by headings."""
+    if not isinstance(html_content, str) or not html_content.strip():
+        return None, None
+
+    text = html_content
+    text = re.sub(
+        r"(?i)<h[1-6][^>]*>\s*(responsibilities|職務|工作職責|職責|工作內容)\s*</h[1-6]>",
+        "\n<<<RESP>>>\n",
+        text,
+    )
+    text = re.sub(
+        r"(?i)<h[1-6][^>]*>\s*(requirements|要求|資歷|職位要求|資格|qualifications)\s*</h[1-6]>",
+        "\n<<<REQ>>>\n",
+        text,
+    )
+
+    responsibilities = None
+    requirements = None
+
+    if "<<<RESP>>>" in text:
+        after = text.split("<<<RESP>>>", 1)[1]
+        if "<<<REQ>>>" in after:
+            resp_html, rest = after.split("<<<REQ>>>", 1)
+            responsibilities = clean_long_text(resp_html)
+            requirements = clean_long_text(rest)
+        else:
+            responsibilities = clean_long_text(after)
+    elif "<<<REQ>>>" in text:
+        after = text.split("<<<REQ>>>", 1)[1]
+        requirements = clean_long_text(after)
+    else:
+        whole = clean_long_text(html_content)
+        if whole:
+            responsibilities = whole
+
+    return responsibilities, requirements
 
 
 def supported_target(raw_url):
@@ -164,12 +256,22 @@ def extract_jobsdb(scripts, expected_id):
                 continue
             if str(job.get("id")) != expected_id:
                 raise HTTPException(status_code=502, detail="The source returned a different job ID. Import stopped.")
+
+            content = job.get("content")
+            responsibilities, requirements = extract_sections_from_html(
+                content if isinstance(content, str) else ""
+            )
+
             return {
                 "title": clean_text(job.get("title")),
                 "company": clean_text(nested(job, "advertiser", "name")),
                 "location": clean_text(nested(job, "location", "label")),
                 "salary": clean_text(nested(job, "salary", "label")),
                 "is_expired": job.get("isExpired") is True,
+                "posted_at": parse_date(job.get("listingDate")),
+                "apply_by": parse_date(job.get("expiryDate")),
+                "responsibilities": responsibilities,
+                "requirements": requirements,
             }
     return None
 
@@ -294,12 +396,22 @@ def extract_jsonld(scripts, target_url):
         raise HTTPException(status_code=502, detail="Multiple job records found; the selected listing could not be identified safely.")
     organization = posting.get("hiringOrganization")
     company = clean_text(organization.get("name")) if isinstance(organization, dict) else clean_text(organization)
+
+    description = posting.get("description")
+    responsibilities, requirements = extract_sections_from_html(
+        description if isinstance(description, str) else ""
+    )
+
     return {
         "title": clean_text(posting.get("title")),
         "company": company,
         "location": extract_location(posting),
         "salary": extract_salary(posting),
         "is_expired": None,
+        "posted_at": parse_date(posting.get("datePosted")),
+        "apply_by": parse_date(posting.get("validThrough")),
+        "responsibilities": responsibilities,
+        "requirements": requirements,
     }
 
 
@@ -332,6 +444,10 @@ def build_preview(html, url, source, expected_id):
         "status": "saved",
         "notes": None,
         "applied_at": None,
+        "posted_at": extracted.get("posted_at"),
+        "apply_by": extracted.get("apply_by"),
+        "responsibilities": extracted.get("responsibilities"),
+        "requirements": extracted.get("requirements"),
     }
     missing_required = [key for key in ("title", "company") if not job[key]]
     missing_optional = [key for key in ("location", "salary") if not job[key]]
