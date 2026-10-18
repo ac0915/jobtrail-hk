@@ -24,3 +24,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS jobs_url_unique
 
 CREATE INDEX IF NOT EXISTS jobs_status_idx ON jobs (status);
 CREATE INDEX IF NOT EXISTS jobs_created_at_idx ON jobs (created_at DESC);
+
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS posted_at DATE;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS apply_by DATE;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS responsibilities TEXT;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS requirements TEXT;
