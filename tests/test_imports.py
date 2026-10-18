@@ -42,6 +42,9 @@ def sample_job():
         "location": {"label": "Hong Kong Island"},
         "salary": {"label": "$33,000 – $48,000 per month"},
         "isExpired": False,
+        "listingDate": "2026-10-01T02:00:00.000Z",
+        "expiryDate": "2026-11-01T16:00:00.000Z",
+        "content": "<h2>Responsibilities</h2><ul><li>Build models</li></ul><h2>Requirements</h2><p>Python and SQL</p>",
     }
 
 
@@ -125,3 +128,16 @@ def test_website_schema_is_not_a_job():
         build_preview(html, URL, "JobsDB", "95267657")
 
     assert error.value.status_code == 502
+
+def test_listing_details_are_kept():
+    result = build_preview(
+        make_html(sample_job()),
+        URL,
+        "JobsDB",
+        "95267657",
+    )
+    job = result["job"]
+    assert job["posted_at"] == "2026-10-01"
+    assert job["apply_by"] == "2026-11-01"
+    assert "Build models" in job["responsibilities"]
+    assert "Python and SQL" in job["requirements"]
