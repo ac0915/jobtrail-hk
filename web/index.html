@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JobTrail HK</title>
+
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #233047;
+      background: #f5f7fb;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    [hidden] { display: none !important; }
+
+    a { color: #315cc9; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid #95b6ff;
+      outline-offset: 3px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      min-height: 100dvh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      overflow-y: auto;
+      padding: 28px 18px;
+      background: white;
+      border-right: 1px solid #e4e9f2;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .brand {
+      padding: 0 12px;
+      font-size: 22px;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      padding: 13px 15px;
+      border-radius: 12px;
+      color: #526078;
+      text-decoration: none;
+    }
+
+    .nav a:hover { background: #f2f5fb; }
+
+    .nav a.active {
+      background: #e8efff;
+      color: #315cc9;
+      font-weight: 700;
+    }
+
+    .nav .subnav {
+      margin-left: 20px;
+      border-left: 2px solid #e3e9f4;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .nav-heading {
+      padding: 12px 15px 3px;
+      color: #8a96a8;
+      font-size: 12px;
+      letter-spacing: .08em;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid #e7edf5;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: #e8efff;
+      color: #315cc9;
+      border-radius: 50%;
+      font-weight: 700;
+    }
+
+    .small {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .muted { color: #64748b; }
+
+    main {
+      min-width: 0;
+      padding: 30px clamp(20px, 4vw, 52px) 60px;
+    }
+
+    .topbar,
+    .page-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .topbar { margin-bottom: 30px; }
+
+    .breadcrumb {
+      color: #77849a;
+      font-size: 14px;
+    }
+
+    .pill {
+      padding: 7px 12px;
+      border-radius: 99px;
+      color: #805a12;
+      background: #fff2d8;
+      font-size: 12px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 3vw, 40px);
+      letter-spacing: -.03em;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 21px;
+    }
+
+    p { line-height: 1.7; }
+
+    .subtitle {
+      margin-top: 0;
+      color: #64748b;
+    }
+
+    .notice {
+      margin: 22px 0;
+      padding: 14px 18px;
+      border: 1px solid #f0dfb8;
+      border-radius: 12px;
+      background: #fff8e8;
+      color: #805a12;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .hero {
+      padding: clamp(24px, 4vw, 48px);
+      border: 1px solid #dfe7f8;
+      border-radius: 22px;
+      background: linear-gradient(120deg, #e7eeff, #f0f8ff);
+    }
+
+    .hero p { max-width: 640px; }
+
+    .panel {
+      margin-top: 20px;
+      padding: 25px;
+      border: 1px solid #e2e8f2;
+      border-radius: 17px;
+      background: white;
+    }
+
+    .button,
+    button {
+      display: inline-block;
+      padding: 11px 16px;
+      border: 1px solid #d9e1ef;
+      border-radius: 10px;
+      background: white;
+      color: #334155;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .button:hover,
+    button:hover {
+      background: #f1f5fb;
+    }
+
+    .primary {
+      color: white;
+      background: #315cc9;
+      border-color: #315cc9;
+    }
+
+    .primary:hover { background: #264cae; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .profile-tabs,
+    .mode-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 22px 0;
+    }
+
+    .profile-tabs a {
+      padding: 10px 16px;
+      border-radius: 10px;
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .profile-tabs a.active,
+    .mode-buttons button[aria-pressed="true"] {
+      background: #e8efff;
+      color: #315cc9;
+      border-color: #bacbf5;
+      font-weight: 650;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 24px 0 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .search-field {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    label {
+      color: #526078;
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 12px;
+      border: 1px solid #d9e1ef;
+      border-radius: 10px;
+      color: #233047;
+      background: white;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    #jobs {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      gap: 18px;
+    }
+
+    .job {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 0;
+      padding: 24px;
+      border: 1px solid #e2e8f2;
+      border-radius: 17px;
+      background: white;
+    }
+
+    .job h2 {
+      margin: 16px 0 7px;
+      font-size: 19px;
+      overflow-wrap: anywhere;
+    }
+
+    .company {
+      margin: 0 0 14px;
+      color: #526078;
+    }
+
+    .meta {
+      margin: 4px 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .badge {
+      padding: 5px 11px;
+      border-radius: 99px;
+      background: #eef2ff;
+      color: #485caa;
+      font-size: 12px;
+    }
+
+    .job .actions {
+      margin-top: auto;
+      padding-top: 22px;
+    }
+
+    .danger {
+      color: #b42332;
+      background: #fff5f5;
+      border-color: #f1c5ca;
+    }
+
+    .danger:hover { background: #ffe8eb; }
+
+    .danger-solid {
+      background: #bc3041;
+      border-color: #bc3041;
+      color: white;
+    }
+
+    .danger-solid:hover { background: #a92535; }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 42px 24px;
+      border: 1px dashed #ccd6e6;
+      border-radius: 16px;
+      background: white;
+      color: #64748b;
+      text-align: center;
+    }
+
+    dialog {
+      width: min(480px, calc(100vw - 32px));
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      padding: 28px;
+      border: none;
+      border-radius: 20px;
+      color: #233047;
+      box-shadow: 0 24px 80px #15234433;
+    }
+
+    #add-dialog {
+      width: min(700px, calc(100vw - 32px));
+    }
+
+    dialog::backdrop { background: #17213866; }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .required-fields { margin-top: 18px; }
+
+    .wide { grid-column: 1 / -1; }
+
+    fieldset {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .form-error {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #fff0f2;
+      color: #a62739;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .import-status {
+      margin: 16px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #eef3ff;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .import-status[data-kind="success"] {
+      background: #e7f8ee;
+      color: #1f6c4d;
+    }
+
+    .import-status[data-kind="error"] {
+      background: #fff0f2;
+      color: #a62739;
+    }
+
+    .preview {
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid #dfe6f2;
+      border-radius: 12px;
+    }
+
+    .preview h3 {
+      margin: 0 0 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .preview p {
+      margin: 5px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .preview .warnings {
+      color: #805a12;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    #optional-fields { margin-top: 18px; }
+
+    summary {
+      padding: 10px 0;
+      color: #315cc9;
+      cursor: pointer;
+    }
+
+    #delete-description { overflow-wrap: anywhere; }
+
+    #toasts {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: grid;
+      gap: 12px;
+      width: min(410px, calc(100vw - 32px));
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      pointer-events: none;
+    }
+
+    .toast {
+      --tint: #e5f1ff;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px;
+      gap: 12px;
+      padding: 20px;
+      border: 1px solid white;
+      border-radius: 18px;
+      background:
+        linear-gradient(145deg, var(--tint), white 90%);
+      box-shadow: 0 12px 35px #253b6220;
+      pointer-events: auto;
+    }
+
+    .toast.success { --tint: #d8faec; }
+    .toast.error { --tint: #ffe5e8; }
+
+    .toast h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+    }
+
+    .toast p {
+      margin: 0;
+      color: #526078;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .toast-close {
+      align-self: start;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 22px;
+    }
+
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 1fr; }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 20px;
+        border-right: 0;
+        border-bottom: 1px solid #e4e9f2;
+        gap: 18px;
+      }
+
+      .sidebar-footer { display: none; }
+      main { padding-top: 24px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand" href="/">JobTrail HK</a>
+
+      <nav class="nav" aria-label="主要導覽">
+        <a href="/" data-nav="home">⌕ &nbsp; Find Jobs</a>
+
+        <div class="nav-heading">ACCOUNT</div>
+
+        <a href="/profile" data-nav="profile">
+          ○ &nbsp; My Profile
+        </a>
+
+        <a
+          href="/profile/my-jobs"
+          class="subnav"
+          data-nav="jobs"
+        >
+          ▤ &nbsp; My Jobs
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user">
+          <div class="avatar" aria-hidden="true">D</div>
+          <div>
+            <div>Development preview</div>
+            <div class="small muted">尚未登入真實帳戶</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div id="breadcrumb" class="breadcrumb"></div>
+        <span class="pill">Local development</span>
+      </div>
+
+      <section id="home-page" hidden>
+        <div class="hero">
+          <h1>Find your next opportunity.</h1>
+
+          <p class="subtitle">
+            集中整理香港求職機會，追蹤你的每一步申請。
+          </p>
+
+          <div class="actions">
+            <a
+              class="button primary"
+              href="/profile/my-jobs"
+            >
+              Open My Jobs
+            </a>
+
+            <a class="button" href="/profile">
+              My Profile
+            </a>
+          </div>
+        </div>
+
+        <div class="notice">
+          主頁基礎版：公開職位搜尋尚未接上。
+          個人追蹤清單位於 Profile → My Jobs。
+        </div>
+
+        <section class="panel">
+          <h2>Keep your applications organised</h2>
+
+          <p class="muted">
+            在 My Jobs 貼上招聘連結，自動嘗試讀取職位資料，
+            確認後再儲存及追蹤申請狀態。
+          </p>
+
+          <a class="button" href="/profile/my-jobs">
+            Manage My Jobs →
+          </a>
+        </section>
+      </section>
+
+      <section id="profile-page" hidden>
+        <h1>My Profile</h1>
+        <p class="subtitle">個人帳戶與求職追蹤區。</p>
+
+        <nav class="profile-tabs" aria-label="Profile 分頁">
+          <a
+            href="/profile"
+            class="active"
+            aria-current="page"
+          >
+            Overview
+          </a>
+          <a href="/profile/my-jobs">My Jobs</a>
+        </nav>
+
+        <div class="notice">
+          帳戶系統尚未完成。這是版面預覽，不是真實登入帳戶。
+        </div>
+
+        <section class="panel">
+          <h2>Development preview</h2>
+          <p class="muted">
+            個人資料編輯與帳戶功能尚未加入。
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>My Jobs</h2>
+          <p class="muted">
+            新增職位、查看申請狀態及刪除紀錄。
+          </p>
+
+          <a
+            class="button primary"
+            href="/profile/my-jobs"
+          >
+            Manage My Jobs →
+          </a>
+        </section>
+      </section>
+
+      <section id="jobs-page" hidden>
+        <div class="page-heading">
+          <div>
+            <h1>My Jobs</h1>
+            <p class="subtitle">
+              管理已儲存職位與申請進度。
+            </p>
+          </div>
+
+          <button
+            id="add-job"
+            class="primary"
+            type="button"
+          >
+            ＋ Add Job
+          </button>
+        </div>
+
+        <nav class="profile-tabs" aria-label="Profile 分頁">
+          <a href="/profile">Overview</a>
+          <a
+            href="/profile/my-jobs"
+            class="active"
+            aria-current="page"
+          >
+            My Jobs
+          </a>
+        </nav>
+
+        <div class="notice">
+          本機開發預覽：尚未加入登入與使用者資料隔離。
+          此清單來自開發資料庫，請勿公開供多人使用。
+        </div>
+
+        <div class="toolbar">
+          <div class="field search-field">
+            <label for="search">搜尋職位或公司</label>
+            <input
+              id="search"
+              type="search"
+              placeholder="職位或公司名稱"
+            >
+          </div>
+
+          <div class="field">
+            <label for="status-filter">申請狀態</label>
+            <select id="status-filter">
+              <option value="">所有狀態</option>
+              <option value="saved">Saved</option>
+              <option value="applied">Applied</option>
+              <option value="interview">Interview</option>
+              <option value="offer">Offer</option>
+              <option value="rejected">Rejected</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+
+          <button id="refresh" type="button">
+            重新整理
+          </button>
+        </div>
+
+        <p id="list-summary" class="muted" role="status"></p>
+        <div id="jobs" aria-label="已儲存職位"></div>
+      </section>
+
+      <noscript>
+        <p class="notice">
+          請啟用 JavaScript 以使用網站。
+        </p>
+      </noscript>
+    </main>
+  </div>
+
+  <dialog id="add-dialog" aria-labelledby="add-title">
+    <h2 id="add-title">Add a job</h2>
+
+    <form id="add-form" novalidate>
+      <fieldset id="add-fields">
+        <div
+          class="mode-buttons"
+          role="group"
+          aria-label="新增方式"
+        >
+          <button
+            id="mode-link"
+            type="button"
+            aria-pressed="true"
+          >
+            貼上連結 · 自動讀取
+          </button>
+
+          <button
+            id="mode-manual"
+            type="button"
+            aria-pressed="false"
+          >
+            手動輸入
+          </button>
+        </div>
+
+        <div class="field">
+          <label id="url-label" for="job-url">
+            職位連結 *
+          </label>
+
+          <input
+            id="job-url"
+            name="url"
+            type="text"
+            inputmode="url"
+            placeholder="https://hk.jobsdb.com/job/..."
+            aria-describedby="url-help"
+          >
+
+          <div id="url-help" class="small muted">
+            貼上完整連結後會自動嘗試讀取，不會自動儲存。
+          </div>
+        </div>
+
+        <div
+          id="import-status"
+          class="import-status"
+          role="status"
+          aria-atomic="true"
+        ></div>
+
+        <div class="actions" id="import-actions">
+          <button id="retry-import" type="button">
+            重新讀取
+          </button>
+
+          <button id="manual-fallback" type="button">
+            改用手動補填
+          </button>
+        </div>
+
+        <section
+          id="preview"
+          class="preview"
+          aria-label="職位預覽"
+          hidden
+        >
+          <h3 id="preview-title"></h3>
+          <p id="preview-company"></p>
+          <p id="preview-location" class="muted"></p>
+          <p id="preview-salary" class="muted"></p>
+          <p id="preview-warnings" class="warnings"></p>
+        </section>
+
+        <button id="edit-info" type="button" hidden>
+          編輯已讀取資料
+        </button>
+
+        <div class="form-grid required-fields">
+          <div id="title-field" class="field wide" hidden>
+            <label for="job-title">職位名稱 *</label>
+            <input
+              id="job-title"
+              name="title"
+              maxlength="200"
+              required
+            >
+          </div>
+
+          <div id="company-field" class="field wide" hidden>
+            <label for="job-company">公司／刊登者 *</label>
+            <input
+              id="job-company"
+              name="company"
+              maxlength="200"
+              required
+            >
+          </div>
+        </div>
+
+        <details id="optional-fields" hidden>
+          <summary>其他資料（選填）</summary>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="job-location">地點</label>
+              <input
+                id="job-location"
+                name="location"
+                maxlength="200"
+              >
+            </div>
+
+            <div class="field">
+              <label for="job-salary">薪資</label>
+              <input
+                id="job-salary"
+                name="salary"
+                maxlength="200"
+              >
+            </div>
+
+            <div class="field">
+              <label for="job-status">申請狀態</label>
+              <select id="job-status" name="status">
+                <option value="saved">Saved · 已儲存</option>
+                <option value="applied">Applied · 已申請</option>
+                <option value="interview">Interview · 面試</option>
+                <option value="offer">Offer · 獲聘</option>
+                <option value="rejected">Rejected · 未獲取錄</option>
+                <option value="closed">Closed · 已結束</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="job-date">申請日期</label>
+              <input
+                id="job-date"
+                name="applied_at"
+                type="date"
+              >
+            </div>
+
+            <div class="small muted wide">
+              Applied、Interview、Offer、Rejected 未填日期時，
+              後端會使用伺服器當日日期。
+            </div>
+
+            <div class="field wide">
+              <label for="job-source">來源</label>
+              <input
+                id="job-source"
+                name="source"
+                maxlength="200"
+              >
+            </div>
+
+            <div class="field wide">
+              <label for="job-notes">備註</label>
+              <textarea
+                id="job-notes"
+                name="notes"
+                maxlength="8000"
+              ></textarea>
+            </div>
+          </div>
+        </details>
+      </fieldset>
+
+      <div
+        id="form-error"
+        class="form-error"
+        role="alert"
+        hidden
+      ></div>
+
+      <div class="dialog-actions">
+        <button id="cancel-add" type="button">取消</button>
+
+        <button
+          id="save-job"
+          class="primary"
+          type="submit"
+          disabled
+        >
+          確認並儲存
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog
+    id="delete-dialog"
+    aria-labelledby="delete-title"
+    aria-describedby="delete-description delete-warning"
+  >
+    <h2 id="delete-title">刪除這個職位？</h2>
+    <p id="delete-description"></p>
+
+    <p id="delete-warning" class="muted">
+      只會從追蹤清單移除，不會刪除原招聘廣告。
+      此操作無法復原。
+    </p>
+
+    <div class="dialog-actions">
+      <button id="cancel-delete" type="button" autofocus>
+        取消
+      </button>
+
+      <button
+        id="confirm-delete"
+        class="danger-solid"
+        type="button"
+      >
+        確認刪除
+      </button>
+    </div>
+  </dialog>
+
+  <div id="toasts" aria-label="通知"></div>
+
+  <script>
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    const path =
+      location.pathname.replace(/\/+$/, "") || "/";
+
+    const pageKey = path === "/profile"
+      ? "profile"
+      : ["/profile/my-jobs", "/my-jobs"].includes(path)
+        ? "jobs"
+        : "home";
+
+    $(pageKey + "-page").hidden = false;
+
+    document.title = {
+      home: "Find Jobs | JobTrail HK",
+      profile: "My Profile | JobTrail HK",
+      jobs: "My Jobs | JobTrail HK"
+    }[pageKey];
+
+    $("breadcrumb").textContent = {
+      home: "JobTrail HK / Find Jobs",
+      profile: "Account / My Profile",
+      jobs: "Account / My Profile / My Jobs"
+    }[pageKey];
+
+    document.querySelectorAll("[data-nav]").forEach(link => {
+      const active = link.dataset.nav === pageKey;
+      link.classList.toggle("active", active);
+
+      if (active) {
+        link.setAttribute("aria-current", "page");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+
+    let jobs = [];
+    let loaded = false;
+    let loading = false;
+    let saving = false;
+    let deleting = false;
+
+    let selectedJob = null;
+    let deleteTrigger = null;
+
+    let mode = "link";
+    let importState = "idle";
+    let importVersion = 0;
+    let importTimer = null;
+    let importController = null;
+
+    let importedInput = "";
+    let canonicalUrl = "";
+    let importWarnings = [];
+    let editing = false;
+
+    const jobFieldIds = {
+      title: "job-title",
+      company: "job-company",
+      location: "job-location",
+      salary: "job-salary",
+      source: "job-source",
+      notes: "job-notes"
+    };
+
+    function node(tag, className, text) {
+      const item = document.createElement(tag);
+
+      if (className) item.className = className;
+      if (text !== undefined) item.textContent = text;
+
+      return item;
+    }
+
+    function toast(type, title, message) {
+      const card = node("section", "toast " + type);
+
+      card.setAttribute(
+        "role",
+        type === "error" ? "alert" : "status"
+      );
+
+      card.setAttribute("aria-atomic", "true");
+
+      const content = node("div");
+
+      content.append(
+        node("h3", "", title),
+        node("p", "", message)
+      );
+
+      const close = node("button", "toast-close", "×");
+      close.type = "button";
+      close.setAttribute("aria-label", "關閉通知");
+
+      card.append(content, close);
+      $("toasts").appendChild(card);
+
+      let timer = null;
+      let remaining = 6500;
+      let started = 0;
+      let dismissed = false;
+
+      function dismiss() {
+        if (dismissed) return;
+
+        dismissed = true;
+        clearTimeout(timer);
+        card.remove();
+      }
+
+      function pause() {
+        if (timer !== null) {
+          clearTimeout(timer);
+          timer = null;
+
+          remaining = Math.max(
+            0,
+            remaining - (Date.now() - started)
+          );
+        }
+      }
+
+      function resume() {
+        if (
+          dismissed ||
+          type === "error" ||
+          timer !== null ||
+          card.matches(":hover") ||
+          card.contains(document.activeElement)
+        ) {
+          return;
+        }
+
+        started = Date.now();
+        timer = setTimeout(dismiss, remaining);
+      }
+
+      close.addEventListener("click", dismiss);
+      card.addEventListener("mouseenter", pause);
+      card.addEventListener("mouseleave", resume);
+      card.addEventListener("focusin", pause);
+
+      card.addEventListener("focusout", () => {
+        setTimeout(resume, 0);
+      });
+
+      resume();
+    }
+
+    async function api(url, options = {}) {
+      let response;
+
+      try {
+        response = await fetch(url, {
+          ...options,
+          headers: {
+            Accept: "application/json",
+            ...(options.headers || {})
+          }
+        });
+      } catch (error) {
+        if (error.name === "AbortError") throw error;
+
+        throw new Error(
+          "無法連接伺服器。若剛才正在儲存或刪除，" +
+          "請先重新整理清單確認結果，避免重複操作。"
+        );
+      }
+
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const detail = body?.detail;
+        let message = "伺服器未能完成操作。";
+
+        if (typeof detail === "string") {
+          message = detail;
+        } else if (Array.isArray(detail)) {
+          message = detail.map(item =>
+            (item.loc || []).join(" → ") + ": " + item.msg
+          ).join("\n");
+        } else if (detail?.message) {
+          message = detail.message;
+        }
+
+        const error = new Error(
+          message + "（HTTP " + response.status + "）"
+        );
+
+        error.status = response.status;
+        error.detail = detail;
+
+        throw error;
+      }
+
+      return body;
+    }
+
+    const titleOf = job => job.title || "未命名職位";
+    const companyOf = job => job.company || "未提供公司";
+
+    function syncSave() {
+      const ready = mode === "manual" || (
+        importState === "ready" &&
+        importedInput === $("job-url").value.trim()
+      );
+
+      $("save-job").disabled =
+        saving ||
+        !ready ||
+        !$("job-title").value.trim() ||
+        !$("job-company").value.trim();
+    }
+
+    function syncControls() {
+      const busy = loading || saving || deleting;
+
+      $("refresh").disabled = busy;
+      $("add-job").disabled = busy;
+
+      syncSave();
+    }
+
+    function statusMessage(message, kind = "info") {
+      $("import-status").textContent = message;
+      $("import-status").dataset.kind = kind;
+    }
+
+    function stopImport() {
+      clearTimeout(importTimer);
+      importTimer = null;
+      importVersion++;
+
+      if (importController) {
+        importController.abort();
+      }
+
+      importController = null;
+    }
+
+    function clearJobFields() {
+      Object.values(jobFieldIds).forEach(id => {
+        $(id).value = "";
+      });
+
+      $("job-status").value = "saved";
+      $("job-date").value = "";
+
+      canonicalUrl = "";
+      importedInput = "";
+      importWarnings = [];
+      editing = false;
+
+      $("preview").hidden = true;
+      $("edit-info").hidden = true;
+      $("optional-fields").open = false;
+    }
+
+    function updateFieldVisibility() {
+      const accessible =
+        mode === "manual" || importState === "ready";
+
+      $("title-field").hidden = !accessible || (
+        mode === "link" &&
+        !editing &&
+        !!$("job-title").value.trim()
+      );
+
+      $("company-field").hidden = !accessible || (
+        mode === "link" &&
+        !editing &&
+        !!$("job-company").value.trim()
+      );
+
+      $("optional-fields").hidden = !accessible;
+    }
+
+    function updatePreview() {
+      $("preview-title").textContent =
+        $("job-title").value.trim() || "職位名稱待補填";
+
+      $("preview-company").textContent =
+        "公司／刊登者：" +
+        ($("job-company").value.trim() || "待補填");
+
+      $("preview-location").textContent =
+        "地點：" +
+        ($("job-location").value.trim() || "未提供");
+
+      $("preview-salary").textContent =
+        "薪資：" +
+        ($("job-salary").value.trim() || "未提供");
+
+      $("preview-warnings").textContent =
+        importWarnings.join("\n");
+    }
+
+    function switchMode(nextMode) {
+      if (saving) return;
+
+      stopImport();
+      mode = nextMode;
+
+      const linkMode = mode === "link";
+
+      $("mode-link").setAttribute(
+        "aria-pressed",
+        String(linkMode)
+      );
+
+      $("mode-manual").setAttribute(
+        "aria-pressed",
+        String(!linkMode)
+      );
+
+      $("url-label").textContent = linkMode
+        ? "職位連結 *"
+        : "職位連結（選填）";
+
+      $("job-url").required = linkMode;
+      $("import-actions").hidden = !linkMode;
+      $("form-error").hidden = true;
+
+      if (!linkMode) {
+        importState = "idle";
+        editing = true;
+
+        $("edit-info").hidden = true;
+        $("preview").hidden = true;
+
+        statusMessage(
+          "手動輸入模式：只需填寫職位名稱與公司；其他資料選填。"
+        );
+
+        $("url-help").textContent =
+          "沒有連結也可以新增；若保留連結，" +
+          "請確認它與職位資料相符。";
+
+        updateFieldVisibility();
+        $("optional-fields").open = true;
+        syncSave();
+      } else {
+        clearJobFields();
+        importState = "idle";
+
+        $("url-help").textContent =
+          "貼上完整連結後會自動嘗試讀取。" +
+          "更換連結會清除上一職位的預填及修改。";
+
+        updateFieldVisibility();
+        scheduleImport();
+      }
+    }
+
+    function scheduleImport() {
+      stopImport();
+      clearJobFields();
+
+      importState = "idle";
+      $("form-error").hidden = true;
+
+      updateFieldVisibility();
+
+      const value = $("job-url").value.trim();
+
+      if (!value) {
+        statusMessage(
+          "貼上 JobsDB 或 Indeed 單一職位連結，" +
+          "自動嘗試讀取資料。"
+        );
+
+        syncSave();
+        return;
+      }
+
+      importState = "waiting";
+      statusMessage("準備讀取職位資料……");
+      syncSave();
+
+      const version = importVersion;
+
+      importTimer = setTimeout(() => {
+        runImport(value, version);
+      }, 650);
+    }
+
+    async function runImport(input, version) {
+      if (
+        version !== importVersion ||
+        mode !== "link" ||
+        !$("add-dialog").open
+      ) {
+        return;
+      }
+
+      const controller = new AbortController();
+      importController = controller;
+
+      let timedOut = false;
+
+      const timeout = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 25000);
+
+      importState = "loading";
+      statusMessage("正在讀取職位資料……");
+      syncSave();
+
+      try {
+        const result = await api("/imports/preview", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            url: input
+          }),
+          signal: controller.signal
+        });
+
+        if (
+          version !== importVersion ||
+          mode !== "link" ||
+          !$("add-dialog").open
+        ) {
+          return;
+        }
+
+        if (
+          !result?.job ||
+          !["ready", "partial"].includes(result.result)
+        ) {
+          throw new Error("預覽回應格式不正確。");
+        }
+
+        const job = result.job;
+
+        for (const [key, id] of Object.entries(jobFieldIds)) {
+          $(id).value =
+            typeof job[key] === "string" ? job[key] : "";
+        }
+
+        canonicalUrl =
+          typeof job.url === "string" ? job.url : input;
+
+        importedInput = input;
+        importState = "ready";
+
+        const warnings = Array.isArray(result.warnings)
+          ? result.warnings.filter(item => typeof item === "string")
+          : [];
+
+        importWarnings = warnings.map(message => {
+          if (message === (
+            "Company is the listing advertiser and may be a " +
+            "recruitment agency rather than the final employer."
+          )) {
+            return (
+              "公司欄位來自招聘廣告刊登者，" +
+              "可能是招聘機構，而非最終僱主。"
+            );
+          }
+
+          if (message === "The source marks this listing as expired.") {
+            return "來源網站已將此職位標示為過期。";
+          }
+
+          return message;
+        });
+
+        const missing = [];
+
+        if (!$("job-title").value.trim()) {
+          missing.push("職位名稱");
+        }
+
+        if (!$("job-company").value.trim()) {
+          missing.push("公司／刊登者");
+        }
+
+        statusMessage(
+          missing.length
+            ? "已讀取部分資料，請只補上：" +
+              missing.join("、") + "。"
+            : "職位資料已讀取，請確認後儲存。",
+          missing.length ? "info" : "success"
+        );
+
+        $("preview").hidden = false;
+        $("edit-info").hidden = false;
+
+        updatePreview();
+        updateFieldVisibility();
+        syncSave();
+      } catch (error) {
+        if (
+          version !== importVersion ||
+          mode !== "link" ||
+          !$("add-dialog").open
+        ) {
+          return;
+        }
+
+        importState = "error";
+
+        statusMessage(
+          timedOut
+            ? "讀取逾時。你可以重新讀取，或改用手動補填。"
+            : "未能讀取這個職位。\n" +
+              error.message +
+              "\n可重新讀取，或改用手動補填。",
+          "error"
+        );
+
+        syncSave();
+      } finally {
+        clearTimeout(timeout);
+
+        if (importController === controller) {
+          importController = null;
+        }
+      }
+    }
+
+    function openAdd() {
+      if (loading || saving || deleting) return;
+
+      stopImport();
+      $("add-form").reset();
+      clearJobFields();
+
+      $("form-error").hidden = true;
+      $("form-error").textContent = "";
+
+      $("add-dialog").showModal();
+      switchMode("link");
+      $("job-url").focus();
+    }
+
+    function render() {
+      if (!loaded) return;
+
+      const keyword = $("search").value.trim().toLowerCase();
+      const status = $("status-filter").value;
+
+      const visible = jobs.filter(job => {
+        const text =
+          (titleOf(job) + " " + companyOf(job)).toLowerCase();
+
+        return (
+          text.includes(keyword) &&
+          (!status || job.status === status)
+        );
+      });
+
+      $("list-summary").textContent =
+        "顯示 " + visible.length +
+        " 筆，共 " + jobs.length + " 筆職位";
+
+      $("jobs").replaceChildren();
+
+      if (!visible.length) {
+        $("jobs").appendChild(node(
+          "div",
+          "empty",
+          jobs.length
+            ? "找不到符合條件的職位，請調整搜尋或篩選。"
+            : "尚未儲存職位。按 Add Job 新增第一個職位。"
+        ));
+
+        return;
+      }
+
+      visible.forEach(job => {
+        const card = node("article", "job");
+
+        card.append(
+          node("span", "badge", job.status || "saved"),
+          node("h2", "", titleOf(job)),
+          node("p", "company", companyOf(job)),
+          node("p", "meta", "地點：" + (job.location || "未提供")),
+          node("p", "meta", "薪資：" + (job.salary || "未提供")),
+          node("p", "meta", "來源：" + (job.source || "未提供")),
+          node(
+            "p",
+            "meta",
+            "申請日期：" + (job.applied_at || "尚未記錄")
+          )
+        );
+
+        const actions = node("div", "actions");
+
+        if (job.url) {
+          try {
+            const url = new URL(job.url);
+
+            if (["http:", "https:"].includes(url.protocol)) {
+              const link = node(
+                "a",
+                "button",
+                "原始職位連結"
+              );
+
+              link.href = url.href;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+
+              actions.appendChild(link);
+            }
+          } catch (_) {
+            // Invalid stored URLs are not rendered as links.
+          }
+        }
+
+        const remove = node(
+          "button",
+          "danger",
+          "Delete · 刪除"
+        );
+
+        remove.type = "button";
+        remove.disabled =
+          job.id === null || job.id === undefined;
+
+        remove.setAttribute(
+          "aria-label",
+          "刪除 " + titleOf(job) + "，" + companyOf(job)
+        );
+
+        remove.addEventListener("click", () => {
+          if (loading || saving || deleting) return;
+
+          selectedJob = job;
+          deleteTrigger = remove;
+
+          $("delete-description").textContent =
+            "你即將刪除「" + titleOf(job) +
+            "」— " + companyOf(job) + "。";
+
+          $("delete-dialog").showModal();
+        });
+
+        actions.appendChild(remove);
+        card.appendChild(actions);
+        $("jobs").appendChild(card);
+      });
+    }
+
+    async function loadJobs() {
+      if (loading || saving || deleting) return false;
+
+      loading = true;
+      syncControls();
+
+      $("list-summary").textContent = "正在載入職位……";
+      $("jobs").setAttribute("aria-busy", "true");
+
+      try {
+        const result = await api("/jobs");
+
+        if (
+          !Array.isArray(result) ||
+          result.some(job => !job || typeof job !== "object")
+        ) {
+          throw new Error("職位清單格式不正確。");
+        }
+
+        jobs = result;
+        loaded = true;
+        render();
+
+        return true;
+      } catch (error) {
+        $("list-summary").textContent = loaded
+          ? "更新失敗，目前保留上次載入的資料。"
+          : "無法載入職位，請重新整理重試。";
+
+        toast("error", "無法載入職位", error.message);
+
+        return false;
+      } finally {
+        loading = false;
+        $("jobs").setAttribute("aria-busy", "false");
+        syncControls();
+      }
+    }
+
+    function showFormError(message) {
+      $("form-error").textContent = message;
+      $("form-error").hidden = false;
+    }
+
+    $("add-form").addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (saving || loading || deleting) return;
+
+      if (
+        mode === "link" &&
+        (
+          importState !== "ready" ||
+          importedInput !== $("job-url").value.trim()
+        )
+      ) {
+        showFormError(
+          "請先完成連結讀取，或切換至手動輸入模式。"
+        );
+        return;
+      }
+
+      const title = $("job-title").value.trim();
+      const company = $("job-company").value.trim();
+
+      if (!title || !company) {
+        editing = true;
+        updateFieldVisibility();
+        showFormError("請補上職位名稱及公司。");
+        return;
+      }
+
+      if (title.length > 200 || company.length > 200) {
+        editing = true;
+        updateFieldVisibility();
+        showFormError("職位名稱及公司名稱各不可超過 200 字元。");
+        return;
+      }
+
+      const optional = id => $(id).value.trim() || null;
+
+      const payload = {
+        title,
+        company,
+        url: mode === "link"
+          ? canonicalUrl
+          : optional("job-url"),
+        location: optional("job-location"),
+        salary: optional("job-salary"),
+        source: optional("job-source"),
+        notes: optional("job-notes"),
+        status: $("job-status").value,
+        applied_at: $("job-date").value || null
+      };
+
+      saving = true;
+      syncControls();
+
+      $("add-fields").disabled = true;
+      $("cancel-add").disabled = true;
+      $("save-job").textContent = "正在儲存……";
+      $("form-error").hidden = true;
+
+      let saved = false;
+
+      try {
+        await api("/jobs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        saved = true;
+
+        $("add-dialog").close();
+        $("search").value = "";
+        $("status-filter").value = "";
+
+        toast(
+          "success",
+          "職位已儲存",
+          "已加入「" + title + "」— " + company + "。"
+        );
+      } catch (error) {
+        showFormError(
+          error.status === 409
+            ? "這個職位連結已儲存，不需要重複新增。\n" +
+              error.message
+            : error.message
+        );
+      } finally {
+        saving = false;
+        $("add-fields").disabled = false;
+        $("cancel-add").disabled = false;
+        $("save-job").textContent = "確認並儲存";
+
+        syncControls();
+      }
+
+      if (saved) {
+        await loadJobs();
+        $("add-job").focus();
+      }
+    });
+
+    $("confirm-delete").addEventListener("click", async () => {
+      if (
+        !selectedJob ||
+        deleting ||
+        saving ||
+        loading
+      ) {
+        return;
+      }
+
+      const job = selectedJob;
+      const trigger = deleteTrigger;
+
+      let removed = false;
+
+      deleting = true;
+      syncControls();
+
+      $("confirm-delete").disabled = true;
+      $("cancel-delete").disabled = true;
+      $("confirm-delete").textContent = "正在刪除……";
+
+      try {
+        await api("/jobs/" + encodeURIComponent(job.id), {
+          method: "DELETE"
+        });
+
+        jobs = jobs.filter(item => item.id !== job.id);
+        removed = true;
+
+        $("delete-dialog").close();
+        render();
+        $("search").focus();
+
+        toast(
+          "success",
+          "職位已刪除",
+          "已移除「" + titleOf(job) +
+          "」— " + companyOf(job) + "。"
+        );
+      } catch (error) {
+        $("delete-dialog").close();
+
+        toast(
+          "error",
+          "未能確認刪除",
+          error.message +
+          "\n請重新整理清單確認最新狀態。"
+        );
+      } finally {
+        deleting = false;
+        selectedJob = null;
+
+        $("confirm-delete").disabled = false;
+        $("cancel-delete").disabled = false;
+        $("confirm-delete").textContent = "確認刪除";
+
+        syncControls();
+
+        if (!removed && trigger?.isConnected) {
+          trigger.focus();
+        }
+      }
+    });
+
+    $("job-url").addEventListener("input", () => {
+      if (mode === "link") {
+        scheduleImport();
+      } else {
+        syncSave();
+      }
+    });
+
+    Object.values(jobFieldIds).forEach(id => {
+      $(id).addEventListener("input", () => {
+        updatePreview();
+        syncSave();
+      });
+    });
+
+    $("mode-link").addEventListener("click", () => {
+      if (mode !== "link") switchMode("link");
+    });
+
+    $("mode-manual").addEventListener("click", () => {
+      if (mode !== "manual") switchMode("manual");
+    });
+
+    $("manual-fallback").addEventListener("click", () => {
+      switchMode("manual");
+    });
+
+    $("retry-import").addEventListener("click", () => {
+      if (mode === "link" && !saving) {
+        scheduleImport();
+      }
+    });
+
+    $("edit-info").addEventListener("click", () => {
+      editing = true;
+      updateFieldVisibility();
+      $("optional-fields").open = true;
+      $("job-title").focus();
+    });
+
+    $("add-job").addEventListener("click", openAdd);
+
+    $("cancel-add").addEventListener("click", () => {
+      if (!saving) {
+        stopImport();
+        $("add-dialog").close();
+      }
+    });
+
+    $("add-dialog").addEventListener("cancel", event => {
+      if (saving) {
+        event.preventDefault();
+      } else {
+        stopImport();
+      }
+    });
+
+    $("add-dialog").addEventListener("close", () => {
+      stopImport();
+      importState = "idle";
+      syncSave();
+    });
+
+    $("cancel-delete").addEventListener("click", () => {
+      if (!deleting) $("delete-dialog").close();
+    });
+
+    $("delete-dialog").addEventListener("cancel", event => {
+      if (deleting) event.preventDefault();
+    });
+
+    $("search").addEventListener("input", render);
+
+    $("status-filter").addEventListener(
+      "change",
+      render
+    );
+
+    $("refresh").addEventListener("click", loadJobs);
+
+    if (pageKey === "jobs") {
+      loadJobs();
+    }
+  </script>
+</body>
+</html>

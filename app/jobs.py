@@ -100,9 +100,7 @@ class JobUpdate(BaseModel):
     @field_validator("url")
     @classmethod
     def url_normalized(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
-        if not value.strip():
+        if value is None or not value.strip():
             return None
         return normalize_url(value)
 
@@ -148,7 +146,7 @@ def _row_to_job(row: tuple[Any, ...]) -> dict[str, Any]:
     }
 
 
-def _db_unavailable(exc: OperationalError) -> HTTPException:
+def _db_unavailable() -> HTTPException:
     return HTTPException(
         status_code=503,
         detail=(
@@ -158,9 +156,14 @@ def _db_unavailable(exc: OperationalError) -> HTTPException:
     )
 
 
-def _find_by_url(cur, url: Optional[str], exclude_id: Optional[int] = None):
+def _find_by_url(
+    cur,
+    url: Optional[str],
+    exclude_id: Optional[int] = None,
+):
     if not url:
         return None
+
     if exclude_id is None:
         cur.execute(
             "SELECT id, title, company FROM jobs WHERE url = %s LIMIT 1",
@@ -168,20 +171,39 @@ def _find_by_url(cur, url: Optional[str], exclude_id: Optional[int] = None):
         )
     else:
         cur.execute(
-            "SELECT id, title, company FROM jobs WHERE url = %s AND id <> %s LIMIT 1",
+            """
+            SELECT id, title, company
+            FROM jobs
+            WHERE url = %s AND id <> %s
+            LIMIT 1
+            """,
             (url, exclude_id),
         )
+
     return cur.fetchone()
 
 
 def _duplicate_response(existing: tuple[Any, ...]) -> HTTPException:
     existing_id, title, company = existing
+
     return HTTPException(
         status_code=409,
         detail={
             "code": "duplicate_url",
-            "message": f"You already saved this listing: {title} at {company}.",
+            "message": (
+                f"You already saved this listing: {title} at {company}."
+            ),
             "existing_id": existing_id,
+        },
+    )
+
+
+def _generic_duplicate_response() -> HTTPException:
+    return HTTPException(
+        status_code=409,
+        detail={
+            "code": "duplicate_url",
+            "message": "You already saved a job with this URL.",
         },
     )
 
@@ -200,7 +222,8 @@ def list_jobs():
                 )
                 rows = cur.fetchall()
     except OperationalError as exc:
-        raise _db_unavailable(exc) from exc
+        raise _db_unavailable() from exc
+
     return [_row_to_job(row) for row in rows]
 
 
@@ -220,12 +243,14 @@ def get_job(job_id: int):
                 )
                 row = cur.fetchone()
     except OperationalError as exc:
-        raise _db_unavailable(exc) from exc
-    if not row:
+        raise _db_unavailable() from exc
+
+    if row is None:
         raise HTTPException(
             status_code=404,
             detail="That job is no longer in your list.",
         )
+
     return _row_to_job(row)
 
 
@@ -233,51 +258,59 @@ def get_job(job_id: int):
 def create_job(job: JobCreate):
     status = job.status
     applied_at = job.applied_at
-    if status in ("applied", "interview", "offer", "rejected") and applied_at is None:
+
+    if (
+        status in ("applied", "interview", "offer", "rejected")
+        and applied_at is None
+    ):
         applied_at = date.today()
+
     try:
         with get_pool().connection() as conn:
             with conn.cursor() as cur:
                 existing = _find_by_url(cur, job.url)
+
                 if existing:
                     raise _duplicate_response(existing)
+
                 try:
-                    cur.execute(
-                        """
-                        INSERT INTO jobs
-                            (title, company, url, location, salary, source, notes,
-                             status, applied_at)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        RETURNING id, created_at, updated_at, status, applied_at
-                        """,
-                        (
-                            job.title,
-                            job.company,
-                            job.url,
-                            job.location,
-                            job.salary,
-                            job.source,
-                            job.notes,
-                            status,
-                            applied_at,
-                        ),
-                    )
+                    with conn.transaction():
+                        cur.execute(
+                            """
+                            INSERT INTO jobs
+                                (
+                                    title, company, url, location, salary,
+                                    source, notes, status, applied_at
+                                )
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            RETURNING
+                                id, created_at, updated_at, status, applied_at
+                            """,
+                            (
+                                job.title,
+                                job.company,
+                                job.url,
+                                job.location,
+                                job.salary,
+                                job.source,
+                                job.notes,
+                                status,
+                                applied_at,
+                            ),
+                        )
+                        row = cur.fetchone()
+
                 except UniqueViolation:
                     existing = _find_by_url(cur, job.url)
+
                     if existing:
                         raise _duplicate_response(existing) from None
-                    raise HTTPException(
-                        status_code=409,
-                        detail={
-                            "code": "duplicate_url",
-                            "message": "You already saved a job with this URL.",
-                        },
-                    ) from None
-                row = cur.fetchone()
-    except HTTPException:
-        raise
+
+                    raise _generic_duplicate_response() from None
+
     except OperationalError as exc:
-        raise _db_unavailable(exc) from exc
+        raise _db_unavailable() from exc
+
     return {
         "message": "Job saved successfully",
         "id": row[0],
@@ -291,75 +324,115 @@ def create_job(job: JobCreate):
 @router.patch("/{job_id}")
 def update_job(job_id: int, job: JobUpdate):
     fields = job.model_dump(exclude_unset=True)
+
     if not fields:
-        raise HTTPException(status_code=400, detail="No fields to update.")
+        raise HTTPException(
+            status_code=400,
+            detail="No fields to update.",
+        )
+
     if "title" in fields and fields["title"] is None:
-        raise HTTPException(status_code=422, detail="Job title cannot be cleared.")
+        raise HTTPException(
+            status_code=422,
+            detail="Job title cannot be cleared.",
+        )
+
     if "company" in fields and fields["company"] is None:
-        raise HTTPException(status_code=422, detail="Company cannot be cleared.")
+        raise HTTPException(
+            status_code=422,
+            detail="Company cannot be cleared.",
+        )
+
     if "status" in fields and fields["status"] is None:
-        raise HTTPException(status_code=422, detail="Status cannot be cleared.")
+        raise HTTPException(
+            status_code=422,
+            detail="Status cannot be cleared.",
+        )
+
     allowed_keys = {
-        "title", "company", "url", "location", "salary",
-        "status", "source", "notes", "applied_at",
+        "title",
+        "company",
+        "url",
+        "location",
+        "salary",
+        "status",
+        "source",
+        "notes",
+        "applied_at",
     }
+
     unknown = set(fields) - allowed_keys
+
     if unknown:
         raise HTTPException(
             status_code=400,
             detail=f"Unknown fields: {', '.join(sorted(unknown))}",
         )
+
     fields["updated_at"] = datetime.now()
+
     if (
         "status" in fields
         and fields["status"] in ("applied", "interview", "offer", "rejected")
         and "applied_at" not in fields
     ):
         fields["applied_at"] = date.today()
+
     set_clause = ", ".join(f"{key} = %s" for key in fields)
     values = list(fields.values())
     values.append(job_id)
+
     try:
         with get_pool().connection() as conn:
             with conn.cursor() as cur:
                 if "url" in fields and fields["url"]:
-                    existing = _find_by_url(cur, fields["url"], exclude_id=job_id)
+                    existing = _find_by_url(
+                        cur,
+                        fields["url"],
+                        exclude_id=job_id,
+                    )
+
                     if existing:
                         raise _duplicate_response(existing)
+
                 try:
-                    cur.execute(
-                        f"""
-                        UPDATE jobs
-                        SET {set_clause}
-                        WHERE id = %s
-                        RETURNING id
-                        """,
-                        values,
-                    )
+                    with conn.transaction():
+                        cur.execute(
+                            f"""
+                            UPDATE jobs
+                            SET {set_clause}
+                            WHERE id = %s
+                            RETURNING id
+                            """,
+                            values,
+                        )
+                        row = cur.fetchone()
+
                 except UniqueViolation:
                     existing = _find_by_url(
-                        cur, fields.get("url"), exclude_id=job_id
+                        cur,
+                        fields.get("url"),
+                        exclude_id=job_id,
                     )
+
                     if existing:
                         raise _duplicate_response(existing) from None
-                    raise HTTPException(
-                        status_code=409,
-                        detail={
-                            "code": "duplicate_url",
-                            "message": "You already saved a job with this URL.",
-                        },
-                    ) from None
-                row = cur.fetchone()
-    except HTTPException:
-        raise
+
+                    raise _generic_duplicate_response() from None
+
     except OperationalError as exc:
-        raise _db_unavailable(exc) from exc
-    if not row:
+        raise _db_unavailable() from exc
+
+    if row is None:
         raise HTTPException(
             status_code=404,
             detail="That job is no longer in your list.",
         )
-    return {"message": "Job updated successfully", "id": row[0]}
+
+    return {
+        "message": "Job updated successfully",
+        "id": row[0],
+    }
 
 
 @router.delete("/{job_id}")
@@ -373,10 +446,15 @@ def delete_job(job_id: int):
                 )
                 row = cur.fetchone()
     except OperationalError as exc:
-        raise _db_unavailable(exc) from exc
-    if not row:
+        raise _db_unavailable() from exc
+
+    if row is None:
         raise HTTPException(
             status_code=404,
             detail="That job is no longer in your list.",
         )
-    return {"message": "Job deleted successfully", "id": row[0]}
+
+    return {
+        "message": "Job deleted successfully",
+        "id": row[0],
+    }
