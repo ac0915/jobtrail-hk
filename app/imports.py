@@ -248,6 +248,45 @@ def extract_sections_from_html(html_content):
     )
 
 
+INDEED_HOSTS = {
+    "hk.indeed.com",
+    "www.indeed.com",
+}
+
+INDEED_KEY = re.compile(r"[A-Za-z0-9_-]{1,100}")
+
+
+def indeed_job_key(parsed):
+    """Read one Indeed job id from jk= or vjk=.
+
+    Search pages and the homepage open a job with vjk.
+    The readable listing is /viewjob?jk=...
+    """
+    found = []
+
+    for name in ("jk", "vjk"):
+        for value in parse_qs(parsed.query).get(name, []):
+            if not INDEED_KEY.fullmatch(value):
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "This Indeed link has an invalid job id."
+                    ),
+                )
+
+            found.append(value)
+
+    if len(set(found)) > 1:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "This Indeed link identifies more than one job."
+            ),
+        )
+
+    return found[0] if found else None
+
+
 def supported_target(raw_url):
     try:
         url = normalize_url(raw_url)
@@ -277,22 +316,29 @@ def supported_target(raw_url):
     ):
         return url, "JobsDB", match.group(1)
 
-    keys = parse_qs(parsed.query).get("jk", [])
-
     if (
         parsed.scheme == "https"
-        and parsed.netloc in {
-            "hk.indeed.com",
-            "www.indeed.com",
-        }
-        and parsed.path == "/viewjob"
-        and len(keys) == 1
-        and re.fullmatch(
-            r"[A-Za-z0-9_-]{1,100}",
-            keys[0],
-        )
+        and parsed.netloc in INDEED_HOSTS
     ):
-        return url, "Indeed", keys[0]
+        job_key = indeed_job_key(parsed)
+
+        if job_key:
+            # Homepage and search links use vjk and do not
+            # contain the job HTML. Fetch the job page instead.
+            canonical = (
+                f"https://{parsed.netloc}/viewjob?jk={job_key}"
+            )
+
+            return canonical, "Indeed", job_key
+
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "This Indeed link does not identify one job. "
+                "Open the listing and copy a link that includes "
+                "jk= or vjk=."
+            ),
+        )
 
     raise HTTPException(
         status_code=422,
