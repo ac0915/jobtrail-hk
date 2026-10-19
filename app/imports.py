@@ -349,27 +349,110 @@ def supported_target(raw_url):
     )
 
 
+def request_headers(url):
+    host = urlparse(url).netloc
+
+    if host.endswith("indeed.com"):
+        return {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/131.0.0.0 Safari/537.36"
+            ),
+            "Accept": (
+                "text/html,application/xhtml+xml,"
+                "application/xml;q=0.9,*/*;q=0.8"
+            ),
+            "Accept-Language": "zh-HK,zh;q=0.9,en-HK;q=0.8,en;q=0.7",
+        }
+
+    return {
+        "User-Agent": "JobTrailHK/0.2 (job preview)",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-HK,en;q=0.9",
+    }
+
+
+def read_failure(url, status):
+    if urlparse(url).netloc.endswith("indeed.com") and status in {401, 403}:
+        return (
+            "Indeed accepted the job id, but blocked the automatic read "
+            f"(HTTP {status}). The listing page is behind a browser check. "
+            "Use manual entry for this Indeed link, or paste a JobsDB link."
+        )
+
+    return (
+        "Could not read source "
+        f"(HTTP {status}). "
+        "Redirects are not followed."
+    )
+
+
+async def fetch_impersonated(url):
+    """Second attempt for sites that reject non-browser clients."""
+    try:
+        from curl_cffi.requests import AsyncSession
+    except ImportError:
+        return None
+
+    try:
+        async with AsyncSession() as session:
+            response = await session.get(
+                url,
+                impersonate="chrome",
+                timeout=12,
+                allow_redirects=False,
+            )
+    except Exception:
+        return None
+
+    if response.status_code != 200:
+        return None
+
+    content_type = response.headers.get("content-type", "").lower()
+
+    if not any(
+        item in content_type
+        for item in ("text/html", "application/xhtml+xml", "")
+    ):
+        return None
+
+    text = response.text or ""
+
+    if len(text.encode("utf-8")) > MAX_BYTES:
+        return None
+
+    lowered = text[:1500].lower()
+
+    if (
+        "authenticating..." in lowered
+        or "security check" in lowered
+        or "cf-browser-verification" in lowered
+    ):
+        return None
+
+    return text
+
+
 async def fetch_html(url):
     async with FETCH_LIMIT:
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(12.0, connect=5.0),
             follow_redirects=False,
             trust_env=False,
-            headers={
-                "User-Agent": "JobTrailHK/0.2 (job preview)",
-                "Accept": "text/html,application/xhtml+xml",
-                "Accept-Language": "en-HK,en;q=0.9",
-            },
+            headers=request_headers(url),
         ) as client:
             async with client.stream("GET", url) as response:
                 if response.status_code != 200:
+                    if response.status_code in {401, 403}:
+                        fallback = await fetch_impersonated(url)
+
+                        if fallback:
+                            return fallback
+
                     raise HTTPException(
                         status_code=502,
-                        detail=(
-                            "Could not read source "
-                            f"(HTTP {response.status_code}). "
-                            "Redirects are not followed."
-                        ),
+                        detail=read_failure(url, response.status_code),
                     )
 
                 content_type = response.headers.get(
