@@ -1,15 +1,17 @@
-"""Job CRUD endpoints with validation and duplicate detection."""
+"""Job CRUD with editable application dates and cover letters."""
 
 from __future__ import annotations
 
-from datetime import date, datetime
-from typing import Any, Optional
+from datetime import date, datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from psycopg import OperationalError
 from psycopg.errors import UniqueViolation
+from psycopg.rows import dict_row
 from pydantic import BaseModel, field_validator
 
+from app.cover_letters import router as cover_letters_router
 from app.database import get_pool
 from app.validation import (
     ALLOWED_STATUSES,
@@ -19,67 +21,39 @@ from app.validation import (
     require_non_empty,
 )
 
+
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
-JOB_COLUMNS = (
-    "id, title, company, url, location, salary, status, source, notes, "
-    "applied_at, posted_at, apply_by, responsibilities, requirements, "
-    "created_at, updated_at"
+HKT = timezone(timedelta(hours=8))
+
+APPLIED_STATUSES = {
+    "applied",
+    "interview",
+    "offer",
+    "rejected",
+}
+
+JOB_FIELDS = (
+    "title",
+    "company",
+    "url",
+    "location",
+    "salary",
+    "status",
+    "source",
+    "notes",
+    "applied_at",
+    "posted_at",
+    "apply_by",
+    "responsibilities",
+    "requirements",
+    "description",
+    "cover_letter",
 )
 
-
-class JobCreate(BaseModel):
-    title: str
-    company: str
-    url: Optional[str] = None
-    location: Optional[str] = None
-    salary: Optional[str] = None
-    source: Optional[str] = None
-    notes: Optional[str] = None
-    status: str = "saved"
-    applied_at: Optional[date] = None
-    posted_at: Optional[date] = None
-    apply_by: Optional[date] = None
-    responsibilities: Optional[str] = None
-    requirements: Optional[str] = None
-
-    @field_validator("title")
-    @classmethod
-    def title_required(cls, value: str) -> str:
-        return require_non_empty(value, "Job title")
-
-    @field_validator("company")
-    @classmethod
-    def company_required(cls, value: str) -> str:
-        return require_non_empty(value, "Company")
-
-    @field_validator("url")
-    @classmethod
-    def url_normalized(cls, value: Optional[str]) -> Optional[str]:
-        return normalize_url(value)
-
-    @field_validator("status")
-    @classmethod
-    def status_allowed(cls, value: str) -> str:
-        result = normalize_status(value)
-        if result is None:
-            raise ValueError("Status is required.")
-        return result
-
-    @field_validator("location", "salary", "source")
-    @classmethod
-    def short_optional(cls, value: Optional[str]) -> Optional[str]:
-        return optional_text(value, max_len=200)
-
-    @field_validator("notes")
-    @classmethod
-    def notes_optional(cls, value: Optional[str]) -> Optional[str]:
-        return optional_text(value, max_len=8000)
-
-    @field_validator("responsibilities", "requirements")
-    @classmethod
-    def long_optional(cls, value: Optional[str]) -> Optional[str]:
-        return optional_text(value, max_len=20000)
+JOB_COLUMNS = ", ".join(
+    ("id",) + JOB_FIELDS + ("created_at", "updated_at")
+)
 
 
 class JobUpdate(BaseModel):
@@ -91,165 +65,150 @@ class JobUpdate(BaseModel):
     status: Optional[str] = None
     source: Optional[str] = None
     notes: Optional[str] = None
+
     applied_at: Optional[date] = None
     posted_at: Optional[date] = None
     apply_by: Optional[date] = None
+
     responsibilities: Optional[str] = None
     requirements: Optional[str] = None
+    description: Optional[str] = None
+    cover_letter: Optional[str] = None
 
-    @field_validator("title")
+    @field_validator("title", "company")
     @classmethod
-    def title_not_blank(cls, value: Optional[str]) -> Optional[str]:
+    def non_empty_text(cls, value):
         if value is None:
             return None
-        return require_non_empty(value, "Job title")
 
-    @field_validator("company")
-    @classmethod
-    def company_not_blank(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
-        return require_non_empty(value, "Company")
+        return require_non_empty(value, "Title/company")
 
     @field_validator("url")
     @classmethod
-    def url_normalized(cls, value: Optional[str]) -> Optional[str]:
-        if value is None or not value.strip():
-            return None
+    def normalized_url(cls, value):
         return normalize_url(value)
 
     @field_validator("status")
     @classmethod
-    def status_allowed(cls, value: Optional[str]) -> Optional[str]:
+    def allowed_status(cls, value):
         if value is None:
             return None
+
         result = normalize_status(value)
+
         if result is None:
             raise ValueError("Status cannot be empty.")
+
         return result
 
     @field_validator("location", "salary", "source")
     @classmethod
-    def short_optional(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
+    def short_text(cls, value):
         return optional_text(value, max_len=200)
 
     @field_validator("notes")
     @classmethod
-    def notes_optional(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
+    def notes_text(cls, value):
         return optional_text(value, max_len=8000)
 
     @field_validator("responsibilities", "requirements")
     @classmethod
-    def long_optional(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
+    def section_text(cls, value):
         return optional_text(value, max_len=20000)
 
-
-def _row_to_job(row: tuple[Any, ...]) -> dict[str, Any]:
-    return {
-        "id": row[0],
-        "title": row[1],
-        "company": row[2],
-        "url": row[3],
-        "location": row[4],
-        "salary": row[5],
-        "status": row[6],
-        "source": row[7],
-        "notes": row[8],
-        "applied_at": row[9],
-        "posted_at": row[10],
-        "apply_by": row[11],
-        "responsibilities": row[12],
-        "requirements": row[13],
-        "created_at": row[14],
-        "updated_at": row[15],
-    }
+    @field_validator("description", "cover_letter")
+    @classmethod
+    def long_text(cls, value):
+        return optional_text(value, max_len=60000)
 
 
-def _db_unavailable() -> HTTPException:
+class JobCreate(JobUpdate):
+    title: str
+    company: str
+    status: str = "saved"
+
+
+def today_hk():
+    return datetime.now(HKT).date()
+
+
+def prepare_application_update(
+    fields,
+    existing_applied_at,
+    today,
+):
+    result = dict(fields)
+
+    if (
+        result.get("status") in APPLIED_STATUSES
+        and "applied_at" not in result
+        and existing_applied_at is None
+    ):
+        result["applied_at"] = today
+
+    return result
+
+
+def database_unavailable():
     return HTTPException(
         status_code=503,
         detail=(
-            "Could not reach the database. Check that PostgreSQL is running "
-            "and DATABASE_URL is correct."
+            "Could not reach the database. "
+            "Check PostgreSQL and DATABASE_URL."
         ),
     )
 
 
-def _find_by_url(
-    cur,
-    url: Optional[str],
-    exclude_id: Optional[int] = None,
-):
+def check_duplicate(cur, url, exclude_id=None):
     if not url:
-        return None
+        return
 
-    if exclude_id is None:
-        cur.execute(
-            "SELECT id, title, company FROM jobs WHERE url = %s LIMIT 1",
-            (url,),
+    sql = """
+        SELECT id, title, company
+        FROM public.jobs
+        WHERE url = %s
+    """
+
+    values = [url]
+
+    if exclude_id is not None:
+        sql += " AND id <> %s"
+        values.append(exclude_id)
+
+    cur.execute(sql + " LIMIT 1", values)
+    existing = cur.fetchone()
+
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "duplicate_url",
+                "message": (
+                    "You already saved this listing: "
+                    f"{existing['title']} at {existing['company']}."
+                ),
+                "existing_id": existing["id"],
+            },
         )
-    else:
-        cur.execute(
-            """
-            SELECT id, title, company
-            FROM jobs
-            WHERE url = %s AND id <> %s
-            LIMIT 1
-            """,
-            (url, exclude_id),
-        )
-
-    return cur.fetchone()
-
-
-def _duplicate_response(existing: tuple[Any, ...]) -> HTTPException:
-    existing_id, title, company = existing
-
-    return HTTPException(
-        status_code=409,
-        detail={
-            "code": "duplicate_url",
-            "message": (
-                f"You already saved this listing: {title} at {company}."
-            ),
-            "existing_id": existing_id,
-        },
-    )
-
-
-def _generic_duplicate_response() -> HTTPException:
-    return HTTPException(
-        status_code=409,
-        detail={
-            "code": "duplicate_url",
-            "message": "You already saved a job with this URL.",
-        },
-    )
 
 
 @router.get("")
 def list_jobs():
     try:
         with get_pool().connection() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute(
                     f"""
                     SELECT {JOB_COLUMNS}
-                    FROM jobs
+                    FROM public.jobs
                     ORDER BY created_at DESC
                     """
                 )
-                rows = cur.fetchall()
-    except OperationalError as exc:
-        raise _db_unavailable() from exc
 
-    return [_row_to_job(row) for row in rows]
+                return cur.fetchall()
+
+    except OperationalError as exc:
+        raise database_unavailable() from exc
 
 
 @router.get("/meta/statuses")
@@ -261,14 +220,20 @@ def list_statuses():
 def get_job(job_id: int):
     try:
         with get_pool().connection() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute(
-                    f"SELECT {JOB_COLUMNS} FROM jobs WHERE id = %s",
+                    f"""
+                    SELECT {JOB_COLUMNS}
+                    FROM public.jobs
+                    WHERE id = %s
+                    """,
                     (job_id,),
                 )
+
                 row = cur.fetchone()
+
     except OperationalError as exc:
-        raise _db_unavailable() from exc
+        raise database_unavailable() from exc
 
     if row is None:
         raise HTTPException(
@@ -276,82 +241,67 @@ def get_job(job_id: int):
             detail="That job is no longer in your list.",
         )
 
-    return _row_to_job(row)
+    return row
 
 
 @router.post("")
 def create_job(job: JobCreate):
-    status = job.status
-    applied_at = job.applied_at
+    data = job.model_dump()
 
-    if (
-        status in ("applied", "interview", "offer", "rejected")
-        and applied_at is None
-    ):
-        applied_at = date.today()
+    for key in ("title", "company", "status"):
+        if data.get(key) is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{key} is required.",
+            )
+
+    if data["applied_at"] is None:
+        data["applied_at"] = today_hk()
 
     try:
         with get_pool().connection() as conn:
-            with conn.cursor() as cur:
-                existing = _find_by_url(cur, job.url)
-
-                if existing:
-                    raise _duplicate_response(existing)
+            with conn.cursor(row_factory=dict_row) as cur:
+                check_duplicate(cur, data.get("url"))
 
                 try:
                     with conn.transaction():
-                        cur.execute(
-                            """
-                            INSERT INTO jobs
-                                (
-                                    title, company, url, location, salary,
-                                    source, notes, status, applied_at,
-                                    posted_at, apply_by,
-                                    responsibilities, requirements
-                                )
-                            VALUES (
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s
-                            )
-                            RETURNING
-                                id, created_at, updated_at, status, applied_at
-                            """,
-                            (
-                                job.title,
-                                job.company,
-                                job.url,
-                                job.location,
-                                job.salary,
-                                job.source,
-                                job.notes,
-                                status,
-                                applied_at,
-                                job.posted_at,
-                                job.apply_by,
-                                job.responsibilities,
-                                job.requirements,
-                            ),
+                        placeholders = ", ".join(
+                            ["%s"] * len(JOB_FIELDS)
                         )
+
+                        cur.execute(
+                            f"""
+                            INSERT INTO public.jobs
+                                ({", ".join(JOB_FIELDS)})
+                            VALUES ({placeholders})
+                            RETURNING
+                                id,
+                                created_at,
+                                updated_at,
+                                status,
+                                applied_at
+                            """,
+                            [data[key] for key in JOB_FIELDS],
+                        )
+
                         row = cur.fetchone()
 
                 except UniqueViolation:
-                    existing = _find_by_url(cur, job.url)
+                    check_duplicate(cur, data.get("url"))
 
-                    if existing:
-                        raise _duplicate_response(existing) from None
-
-                    raise _generic_duplicate_response() from None
+                    raise HTTPException(
+                        status_code=409,
+                        detail=(
+                            "A record conflicts with an existing job."
+                        ),
+                    ) from None
 
     except OperationalError as exc:
-        raise _db_unavailable() from exc
+        raise database_unavailable() from exc
 
     return {
         "message": "Job saved successfully",
-        "id": row[0],
-        "created_at": row[1],
-        "updated_at": row[2],
-        "status": row[3],
-        "applied_at": row[4],
+        **row,
     }
 
 
@@ -365,111 +315,89 @@ def update_job(job_id: int, job: JobUpdate):
             detail="No fields to update.",
         )
 
-    if "title" in fields and fields["title"] is None:
-        raise HTTPException(
-            status_code=422,
-            detail="Job title cannot be cleared.",
-        )
-
-    if "company" in fields and fields["company"] is None:
-        raise HTTPException(
-            status_code=422,
-            detail="Company cannot be cleared.",
-        )
-
-    if "status" in fields and fields["status"] is None:
-        raise HTTPException(
-            status_code=422,
-            detail="Status cannot be cleared.",
-        )
-
-    allowed_keys = {
-        "title",
-        "company",
-        "url",
-        "location",
-        "salary",
-        "status",
-        "source",
-        "notes",
-        "applied_at",
-        "posted_at",
-        "apply_by",
-        "responsibilities",
-        "requirements",
-    }
-
-    unknown = set(fields) - allowed_keys
-
-    if unknown:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unknown fields: {', '.join(sorted(unknown))}",
-        )
-
-    fields["updated_at"] = datetime.now()
-
-    if (
-        "status" in fields
-        and fields["status"] in ("applied", "interview", "offer", "rejected")
-        and "applied_at" not in fields
-    ):
-        fields["applied_at"] = date.today()
-
-    set_clause = ", ".join(f"{key} = %s" for key in fields)
-    values = list(fields.values())
-    values.append(job_id)
+    for key in ("title", "company", "status"):
+        if key in fields and fields[key] is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{key} cannot be cleared.",
+            )
 
     try:
         with get_pool().connection() as conn:
-            with conn.cursor() as cur:
-                if "url" in fields and fields["url"]:
-                    existing = _find_by_url(
-                        cur,
-                        fields["url"],
-                        exclude_id=job_id,
+            with conn.cursor(row_factory=dict_row) as cur:
+                cur.execute(
+                    """
+                    SELECT id, applied_at
+                    FROM public.jobs
+                    WHERE id = %s
+                    FOR UPDATE
+                    """,
+                    (job_id,),
+                )
+
+                old = cur.fetchone()
+
+                if old is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="That job is no longer in your list.",
                     )
 
-                    if existing:
-                        raise _duplicate_response(existing)
+                fields = prepare_application_update(
+                    fields,
+                    existing_applied_at=old["applied_at"],
+                    today=today_hk(),
+                )
+
+                check_duplicate(
+                    cur,
+                    fields.get("url"),
+                    exclude_id=job_id,
+                )
+
+                fields["updated_at"] = datetime.now(
+                    timezone.utc
+                )
+
+                set_clause = ", ".join(
+                    f"{key} = %s"
+                    for key in fields
+                )
 
                 try:
                     with conn.transaction():
                         cur.execute(
                             f"""
-                            UPDATE jobs
+                            UPDATE public.jobs
                             SET {set_clause}
                             WHERE id = %s
                             RETURNING id
                             """,
-                            values,
+                            list(fields.values()) + [job_id],
                         )
+
                         row = cur.fetchone()
 
                 except UniqueViolation:
-                    existing = _find_by_url(
+                    check_duplicate(
                         cur,
                         fields.get("url"),
                         exclude_id=job_id,
                     )
 
-                    if existing:
-                        raise _duplicate_response(existing) from None
-
-                    raise _generic_duplicate_response() from None
+                    raise HTTPException(
+                        status_code=409,
+                        detail=(
+                            "A record conflicts with an existing job."
+                        ),
+                    ) from None
 
     except OperationalError as exc:
-        raise _db_unavailable() from exc
-
-    if row is None:
-        raise HTTPException(
-            status_code=404,
-            detail="That job is no longer in your list.",
-        )
+        raise database_unavailable() from exc
 
     return {
         "message": "Job updated successfully",
-        "id": row[0],
+        **row,
     }
 
 
@@ -477,14 +405,20 @@ def update_job(job_id: int, job: JobUpdate):
 def delete_job(job_id: int):
     try:
         with get_pool().connection() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute(
-                    "DELETE FROM jobs WHERE id = %s RETURNING id",
+                    """
+                    DELETE FROM public.jobs
+                    WHERE id = %s
+                    RETURNING id
+                    """,
                     (job_id,),
                 )
+
                 row = cur.fetchone()
+
     except OperationalError as exc:
-        raise _db_unavailable() from exc
+        raise database_unavailable() from exc
 
     if row is None:
         raise HTTPException(
@@ -494,5 +428,9 @@ def delete_job(job_id: int):
 
     return {
         "message": "Job deleted successfully",
-        "id": row[0],
+        **row,
     }
+
+
+# Final URL: POST /jobs/cover-letter/extract
+router.include_router(cover_letters_router)
