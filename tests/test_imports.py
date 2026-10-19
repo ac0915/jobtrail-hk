@@ -8,7 +8,7 @@ import json
 import pytest
 from fastapi import HTTPException
 
-from app.imports import build_preview, parse_date
+from app.imports import build_preview, parse_date, supported_target
 
 
 URL = "https://hk.jobsdb.com/job/95267657"
@@ -278,3 +278,54 @@ def test_content2_is_supported():
     assert "Build AI platforms" in imported["responsibilities"]
     assert "Python and SQL" in imported["requirements"]
     assert "Cloud experience" in imported["description"]
+
+
+def test_indeed_homepage_vjk_becomes_viewjob():
+    url, source, job_id = supported_target(
+        "https://hk.indeed.com/?hl=zh&vjk=2cd42ed09b6c530b"
+    )
+
+    assert source == "Indeed"
+    assert job_id == "2cd42ed09b6c530b"
+    assert url == (
+        "https://hk.indeed.com/viewjob?jk=2cd42ed09b6c530b"
+    )
+
+
+def test_indeed_search_vjk_becomes_viewjob():
+    url, source, job_id = supported_target(
+        "https://hk.indeed.com/jobs?q=python&l=Hong+Kong"
+        "&vjk=2cd42ed09b6c530b"
+    )
+
+    assert source == "Indeed"
+    assert job_id == "2cd42ed09b6c530b"
+    assert url == (
+        "https://hk.indeed.com/viewjob?jk=2cd42ed09b6c530b"
+    )
+
+
+def test_indeed_viewjob_extra_params_are_canonical():
+    url, source, job_id = supported_target(
+        "https://www.indeed.com/viewjob?jk=abc_12-Z&from=serp"
+    )
+
+    assert source == "Indeed"
+    assert job_id == "abc_12-Z"
+    assert url == "https://www.indeed.com/viewjob?jk=abc_12-Z"
+
+
+def test_indeed_page_without_job_id_is_rejected():
+    with pytest.raises(HTTPException) as error:
+        supported_target("https://hk.indeed.com/?hl=zh")
+
+    assert error.value.status_code == 422
+
+
+def test_conflicting_indeed_ids_are_rejected():
+    with pytest.raises(HTTPException) as error:
+        supported_target(
+            "https://hk.indeed.com/viewjob?jk=aaaa&vjk=bbbb"
+        )
+
+    assert error.value.status_code == 422
