@@ -8,7 +8,12 @@ import json
 import pytest
 from fastapi import HTTPException
 
-from app.imports import build_preview, parse_date, supported_target
+from app.imports import (
+    build_preview,
+    parse_date,
+    parse_pasted_listing,
+    supported_target,
+)
 
 
 URL = "https://hk.jobsdb.com/job/95267657"
@@ -170,11 +175,11 @@ def test_wrong_job_id_is_rejected():
 
 def test_website_schema_is_not_a_job():
     html = """
-    <script type="application/ld+json">
+    <script type=\"application/ld+json\">
     {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "url": "https://hk.jobsdb.com"
+        \"@context\": \"https://schema.org\",
+        \"@type\": \"WebSite\",
+        \"url\": \"https://hk.jobsdb.com\"
     }
     </script>
     """
@@ -280,52 +285,95 @@ def test_content2_is_supported():
     assert "Cloud experience" in imported["description"]
 
 
-def test_indeed_homepage_vjk_becomes_viewjob():
-    url, source, job_id = supported_target(
-        "https://hk.indeed.com/?hl=zh&vjk=2cd42ed09b6c530b"
-    )
-
-    assert source == "Indeed"
-    assert job_id == "2cd42ed09b6c530b"
-    assert url == (
-        "https://hk.indeed.com/viewjob?jk=2cd42ed09b6c530b"
-    )
-
-
-def test_indeed_search_vjk_becomes_viewjob():
-    url, source, job_id = supported_target(
-        "https://hk.indeed.com/jobs?q=python&l=Hong+Kong"
-        "&vjk=2cd42ed09b6c530b"
-    )
-
-    assert source == "Indeed"
-    assert job_id == "2cd42ed09b6c530b"
-    assert url == (
-        "https://hk.indeed.com/viewjob?jk=2cd42ed09b6c530b"
-    )
-
-
-def test_indeed_viewjob_extra_params_are_canonical():
-    url, source, job_id = supported_target(
-        "https://www.indeed.com/viewjob?jk=abc_12-Z&from=serp"
-    )
-
-    assert source == "Indeed"
-    assert job_id == "abc_12-Z"
-    assert url == "https://www.indeed.com/viewjob?jk=abc_12-Z"
-
-
-def test_indeed_page_without_job_id_is_rejected():
-    with pytest.raises(HTTPException) as error:
-        supported_target("https://hk.indeed.com/?hl=zh")
-
-    assert error.value.status_code == 422
-
-
-def test_conflicting_indeed_ids_are_rejected():
+def test_indeed_link_is_rejected_use_paste():
+    """Indeed cannot be scraped; link mode must refuse and point to paste."""
     with pytest.raises(HTTPException) as error:
         supported_target(
-            "https://hk.indeed.com/viewjob?jk=aaaa&vjk=bbbb"
+            "https://hk.indeed.com/viewjob?jk=2cd42ed09b6c530b"
         )
 
     assert error.value.status_code == 422
+    assert "Paste" in error.value.detail
+
+
+def test_paste_target_job_only():
+    """Single job paste without page chrome."""
+    text = """
+Python Developer
+Acme Labs
+Hong Kong Island
+$40,000 – $55,000 per month
+
+Full Job Description
+We build data products for finance teams.
+
+Responsibilities
+- Design APIs
+- Review pull requests
+
+Requirements
+- 3 years Python
+- SQL experience
+"""
+
+    result = parse_pasted_listing(text)
+    job = result["job"]
+
+    assert result["extraction_method"] == "paste_text"
+    assert result["can_save"] is True
+    assert job["title"] == "Python Developer"
+    assert job["company"] == "Acme Labs"
+    assert job["location"] == "Hong Kong Island"
+    assert "40,000" in (job["salary"] or "")
+    assert "Design APIs" in (job["responsibilities"] or "")
+    assert "3 years Python" in (job["requirements"] or "")
+    assert job["source"] == "Paste"
+    assert job["url"] is None
+
+
+def test_paste_whole_page_keeps_one_complete_job():
+    """Whole-page paste: cut recommendations, keep main job only."""
+    text = """
+Sign in
+Create account
+Skip to main content
+
+Senior Backend Engineer
+Horizon Fintech
+Central, Hong Kong
+HKD 50,000 – 70,000 per month
+
+Job Description
+Own the payment platform and lead a small team.
+
+Key Responsibilities
+- Build payment APIs
+- Mentor junior engineers
+
+Requirements
+- 5+ years backend experience
+- Strong Python or Go
+
+Similar jobs
+Junior Frontend Developer
+Other Co
+$20,000 per month
+
+People also searched
+Data Analyst
+"""
+
+    result = parse_pasted_listing(text)
+    job = result["job"]
+
+    assert result["can_save"] is True
+    assert job["title"] == "Senior Backend Engineer"
+    assert job["company"] == "Horizon Fintech"
+    assert "Build payment APIs" in (job["responsibilities"] or "")
+    assert "5+ years" in (job["requirements"] or "")
+
+    # Must not leak recommendation listings.
+    assert "Junior Frontend" not in (job["description"] or "")
+    assert "Other Co" not in (job["description"] or "")
+    assert "Data Analyst" not in (job["description"] or "")
+    assert "Junior Frontend" not in (job["title"] or "")
