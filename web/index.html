@@ -10,111 +10,59 @@
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       color: #233047;
       background: #eef2f8;
-
       --available-height: 100dvh;
       --header-height: 84px;
-
       --blue: #2855c5;
       --blue-dark: #1c3e98;
-      --border: #cbd5e4;
       --muted: #5c6c83;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    [hidden] { display: none !important; }
+    a { color: #315cc9; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
 
-    body {
-      margin: 0;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-
-    a {
-      color: #315cc9;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: .55;
-      cursor: not-allowed;
-    }
-
-    button:focus-visible,
-    a:focus-visible,
-    input:focus-visible,
-    select:focus-visible,
-    textarea:focus-visible {
+    button:focus-visible, a:focus-visible,
+    input:focus-visible, select:focus-visible,
+    textarea:focus-visible, [role="button"]:focus-visible {
       outline: 3px solid #95b6ff;
       outline-offset: 3px;
     }
 
     h1 {
       margin: 0 0 10px;
-      color: #1c2940;
       font-size: 34px;
       letter-spacing: -.8px;
-    }
-
-    h2 {
-      margin: 0 0 12px;
       color: #1c2940;
-      font-size: 22px;
     }
 
-    p {
-      line-height: 1.7;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    /* Top header */
+    h2 { margin: 0 0 12px; font-size: 22px; color: #1c2940; }
+    p { line-height: 1.7; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; line-height: 1.5; }
 
     .site-header {
       position: sticky;
       top: 0;
       z-index: 20;
-
       display: grid;
       grid-template-columns: 250px minmax(0, 1fr);
-      align-items: stretch;
-
       height: var(--header-height);
       background: #dce7fa;
       border-bottom: 3px solid var(--blue);
-      box-shadow: 0 3px 12px rgba(30, 54, 94, .06);
+      box-shadow: 0 3px 12px #1e365e0f;
     }
 
     .brand {
       display: flex;
       align-items: center;
-
-      margin: 0;
       padding: 0 30px;
-
       color: #23468d;
       font-size: 23px;
       font-weight: 750;
-      letter-spacing: -.4px;
       text-decoration: none;
     }
 
@@ -122,17 +70,12 @@
       display: flex;
       align-items: center;
       min-width: 0;
-
       margin: 0;
       padding: 0 clamp(20px, 4vw, 52px);
-
       color: #486080;
       font-size: 14px;
-      line-height: 1.5;
       overflow-wrap: anywhere;
     }
-
-    /* Main layout */
 
     .app {
       display: grid;
@@ -143,35 +86,25 @@
     .sidebar {
       position: sticky;
       top: var(--header-height);
-
       height: calc(100dvh - var(--header-height));
       overflow: auto;
-
       padding: 20px 18px;
-      background: #ffffff;
-      border-right: 1px solid var(--border);
-      box-shadow: 4px 0 18px rgba(30, 48, 80, .04);
+      background: white;
+      border-right: 1px solid #cbd5e4;
     }
 
-    .nav {
-      display: grid;
-      gap: 8px;
-    }
+    .nav { display: grid; gap: 8px; }
 
     .nav a {
       padding: 13px 15px;
       border: 1px solid transparent;
       border-radius: 12px;
-
       color: #45556d;
       font-weight: 550;
       text-decoration: none;
     }
 
-    .nav a:hover {
-      background: #f0f4fc;
-      border-color: #dce4f1;
-    }
+    .nav a:hover { background: #f0f4fc; }
 
     .nav a.active {
       background: #e3ebff;
@@ -181,10 +114,7 @@
       font-weight: 750;
     }
 
-    .subnav {
-      margin-left: 20px;
-      border-left: 2px solid #aebfdd;
-    }
+    .subnav { margin-left: 20px; }
 
     main {
       min-width: 0;
@@ -192,25 +122,19 @@
       background: #eef2f8;
     }
 
-    /* Buttons */
-
-    button,
-    .button {
+    button, .button {
       display: inline-block;
       padding: 10px 15px;
-
       border: 1px solid #c5d0e1;
       border-radius: 10px;
-      background: #ffffff;
-
+      background: white;
       color: #33465f;
       font-weight: 600;
       text-align: center;
       text-decoration: none;
     }
 
-    button:hover,
-    .button:hover {
+    button:hover, .button:hover {
       background: #edf3ff;
       border-color: #9eb7e3;
     }
@@ -218,14 +142,14 @@
     .primary {
       background: var(--blue);
       border-color: var(--blue);
-      color: #ffffff;
-      box-shadow: 0 3px 8px rgba(40, 85, 197, .18);
+      color: white;
+      box-shadow: 0 3px 8px #2855c52e;
     }
 
     .primary:hover {
       background: var(--blue-dark);
       border-color: var(--blue-dark);
-      color: #ffffff;
+      color: white;
     }
 
     .danger {
@@ -234,62 +158,24 @@
       border-color: #e7b7c0;
     }
 
-    .danger:hover {
-      color: #8d1e2e;
-      background: #ffe4e9;
-      border-color: #d897a3;
-    }
+    .danger:hover { background: #ffe4e9; }
 
-    /* Fields */
+    .field { display: grid; gap: 6px; min-width: 0; }
+    label { color: #34465f; font-size: 14px; font-weight: 650; }
 
-    .field {
-      display: grid;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    label {
-      color: #34465f;
-      font-size: 14px;
-      font-weight: 650;
-    }
-
-    input,
-    select,
-    textarea {
+    input, select, textarea {
       width: 100%;
       min-width: 0;
       padding: 10px 12px;
-
       border: 1px solid #bccbe0;
       border-radius: 10px;
-      background: #ffffff;
-
+      background: white;
       color: #26364f;
-      box-shadow: inset 0 1px 2px rgba(28, 46, 77, .025);
     }
 
-    input:hover,
-    select:hover,
-    textarea:hover {
-      border-color: #95acd0;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: #4976d2;
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: #8a98ad;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
+    input:hover, select:hover, textarea:hover { border-color: #95acd0; }
+    input::placeholder, textarea::placeholder { color: #8a98ad; }
+    textarea { min-height: 110px; resize: vertical; }
 
     .grid {
       display: grid;
@@ -304,21 +190,11 @@
       margin-top: 18px;
     }
 
-    /* Home and profile */
-
     .hero {
       padding: 40px;
       border: 1px solid #c9d8f0;
       border-radius: 22px;
-
-      background: linear-gradient(
-        135deg,
-        #dfe9ff,
-        #eef5ff 55%,
-        #f6f9ff
-      );
-
-      box-shadow: 0 8px 22px rgba(30, 54, 94, .06);
+      background: linear-gradient(135deg, #dfe9ff, #f6f9ff);
     }
 
     .panel {
@@ -326,10 +202,8 @@
       margin-top: 20px;
       border: 1px solid #d6e0ee;
       border-radius: 17px;
-      background: #ffffff;
+      background: white;
     }
-
-    /* My Jobs heading and toolbar */
 
     .heading {
       display: flex;
@@ -340,14 +214,8 @@
       margin-bottom: 24px;
     }
 
-    .heading-copy {
-      flex: 1 1 230px;
-      min-width: 0;
-    }
-
-    .heading-copy p {
-      margin: 12px 0 0;
-    }
+    .heading-copy { flex: 1 1 230px; min-width: 0; }
+    .heading-copy p { margin: 12px 0 0; }
 
     .toolbar {
       display: flex;
@@ -355,9 +223,7 @@
       align-items: flex-end;
       justify-content: flex-end;
       gap: 12px;
-
       max-width: 100%;
-      margin: 0;
       margin-left: auto;
     }
 
@@ -368,21 +234,9 @@
       min-width: 0;
     }
 
-    .filter-field {
-      width: 155px;
-      max-width: 100%;
-    }
-
-    .toolbar > button {
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-
-    #list-summary {
-      margin: 0 0 18px;
-    }
-
-    /* Job cards */
+    .filter-field { width: 155px; max-width: 100%; }
+    .toolbar > button { flex: 0 0 auto; white-space: nowrap; }
+    #list-summary { margin: 0 0 18px; }
 
     #jobs {
       display: grid;
@@ -397,47 +251,31 @@
       align-items: flex-start;
       min-width: 0;
       padding: 24px;
-
       border: 1px solid #cbd6e6;
       border-radius: 18px;
-      background: #ffffff;
-
-      box-shadow:
-        0 3px 8px rgba(29, 48, 82, .04),
-        0 10px 24px rgba(29, 48, 82, .05);
+      background: white;
+      box-shadow: 0 8px 24px #1d30520d;
     }
 
-    .job:hover {
-      border-color: #9eb5dc;
-      box-shadow:
-        0 4px 10px rgba(29, 48, 82, .05),
-        0 12px 28px rgba(29, 48, 82, .08);
-    }
-
-    .job h2 {
-      margin: 16px 0 7px;
-      font-size: 20px;
-    }
+    .job:hover { border-color: #9eb5dc; }
+    .job h2 { margin: 16px 0 7px; font-size: 20px; }
 
     .job-title {
       padding: 0;
       border: 0;
       background: transparent;
       color: #1b2942;
-
       font-weight: 720;
       text-align: left;
       overflow-wrap: anywhere;
-      box-shadow: none;
     }
 
     .job-title:hover {
-      color: #315cc9;
       background: transparent;
+      color: #315cc9;
       text-decoration: underline;
     }
 
-    /* Company name size and colour */
     .company {
       margin: 0 0 16px;
       color: #1744b6;
@@ -463,16 +301,12 @@
     .empty {
       grid-column: 1 / -1;
       padding: 40px;
-
       border: 1px dashed #bdcce2;
       border-radius: 16px;
-      background: #ffffff;
-
+      background: white;
       color: #64748b;
       text-align: center;
     }
-
-    /* Quick status update */
 
     .job-status-control {
       display: grid;
@@ -481,30 +315,15 @@
       margin-bottom: 4px;
     }
 
-    .job-status-control label {
-      color: #52647f;
-      font-size: 12px;
-      font-weight: 650;
-    }
+    .job-status-control label { color: #52647f; font-size: 12px; }
 
     .job-status-select {
-      width: 100%;
       padding: 8px 11px;
-
-      border: 1px solid #b9cbea;
-      border-radius: 10px;
       background: #edf3ff;
-
+      border-color: #b9cbea;
       color: #284fa1;
       font-size: 14px;
       font-weight: 650;
-      cursor: pointer;
-    }
-
-    .job-status-select[data-status="applied"] {
-      background: #e8f0ff;
-      border-color: #adc5ed;
-      color: #2856a3;
     }
 
     .job-status-select[data-status="interview"] {
@@ -527,13 +346,7 @@
 
     .job-status-select[data-status="closed"] {
       background: #eef1f5;
-      border-color: #cbd3df;
       color: #5d687a;
-    }
-
-    .job-status-select:disabled {
-      opacity: .65;
-      cursor: wait;
     }
 
     .job-status-message {
@@ -542,58 +355,33 @@
       color: #738198;
       font-size: 12px;
       line-height: 1.5;
-      overflow-wrap: anywhere;
     }
 
-    .job-status-message.loading {
-      color: #315cc9;
-    }
-
-    .job-status-message.success {
-      color: #23815e;
-    }
-
-    .job-status-message.error {
-      color: #b42332;
-    }
-
-    .job-status-message.warning {
-      color: #80571a;
-    }
-
-    /* Dialogs */
+    .job-status-message.loading { color: #315cc9; }
+    .job-status-message.success { color: #23815e; }
+    .job-status-message.error { color: #b42332; }
 
     dialog {
       width: min(760px, calc(100vw - 24px));
       max-height: calc(var(--available-height) - 24px);
       overflow: auto;
       padding: 24px;
-
       border: 1px solid #bdcada;
       border-radius: 20px;
       color: #233047;
-
-      box-shadow: 0 24px 85px rgba(16, 32, 61, .28);
+      box-shadow: 0 24px 85px #10203d47;
     }
 
-    dialog::backdrop {
-      background: rgba(18, 31, 54, .52);
-    }
-
-    /* Add Job */
+    dialog::backdrop { background: #121f3685; }
 
     #add-dialog {
       width: min(1080px, calc(100vw - 24px));
       height: min(780px, calc(var(--available-height) - 24px));
-      max-height: calc(var(--available-height) - 24px);
       padding: 0;
       overflow: hidden;
     }
 
-    #add-dialog[open] {
-      display: flex;
-      flex-direction: column;
-    }
+    #add-dialog[open] { display: flex; flex-direction: column; }
 
     .add-header {
       flex: 0 0 auto;
@@ -601,25 +389,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-
       padding: 18px 24px;
-      background: #ffffff;
+      background: white;
       border-bottom: 2px solid #d4deed;
     }
 
-    .add-header h2 {
-      margin: 0;
-      color: #18366d;
-      font-weight: 750;
-    }
-
-    #close-add,
-    #close-detail,
-    #letter-editor-close {
-      background: #f1f4f9;
-      border-color: #d1dbe9;
-      color: #53647b;
-    }
+    .add-header h2 { margin: 0; color: #18366d; }
 
     #add-form {
       display: flex;
@@ -634,7 +409,6 @@
       flex: 0 0 auto;
       gap: 6px;
       padding: 12px 24px;
-
       background: #e4eaf4;
       border-bottom: 2px solid #c2cfe3;
     }
@@ -642,33 +416,23 @@
     .modal-tabs button {
       flex: 1;
       padding: 10px 8px;
-
       background: #f5f7fc;
-      border-color: #c8d3e5;
-      color: #51627d;
-
       font-size: 14px;
-      font-weight: 650;
     }
 
     .modal-tabs button[aria-selected="true"] {
       background: var(--blue);
       border-color: var(--blue);
-      color: #ffffff;
-
-      box-shadow: 0 3px 8px rgba(40, 85, 197, .18);
-      font-weight: 750;
+      color: white;
     }
 
     #add-fields {
       flex: 1 1 auto;
-      min-width: 0;
       min-height: 0;
-
+      min-width: 0;
       margin: 0;
       padding: 18px 24px;
       border: 0;
-
       overflow: hidden;
       background: #f2f5fa;
     }
@@ -677,7 +441,6 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-
       height: 100%;
       min-height: 0;
       overflow: hidden;
@@ -690,16 +453,29 @@
       gap: 8px;
     }
 
-    .modes button {
-      padding: 8px 12px;
-      font-size: 13px;
-    }
+    .modes button { padding: 8px 12px; font-size: 13px; }
 
     .modes button[aria-pressed="true"] {
       background: #e1eaff;
       border-color: #9bb5eb;
       color: #224eae;
-      box-shadow: inset 0 -2px 0 #5f84d8;
+    }
+
+    #url-field { flex: 0 0 auto; }
+
+    #paste-box {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      gap: 8px;
+    }
+
+    #paste-text {
+      flex: 1 1 auto;
+      min-height: 90px;
+      resize: none;
+      line-height: 1.7;
     }
 
     .source-status {
@@ -707,33 +483,21 @@
       margin: 0;
       padding: 9px 12px;
       border-radius: 9px;
-
       background: #e5edff;
       color: #31538d;
-      box-shadow: inset 3px 0 0 #7898d4;
-
       font-size: 13px;
       line-height: 1.5;
+      overflow-wrap: anywhere;
     }
 
-    .source-status.success {
-      background: #e2f4eb;
-      color: #226d4e;
-      box-shadow: inset 3px 0 0 #4c9b77;
-    }
-
-    .source-status.error {
-      background: #ffeaee;
-      color: #a52a3e;
-      box-shadow: inset 3px 0 0 #d56a7c;
-    }
+    .source-status.success { background: #e2f4eb; color: #226d4e; }
+    .source-status.error { background: #ffeaee; color: #a52a3e; }
 
     .clamp {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       line-clamp: 2;
       -webkit-box-orient: vertical;
-
       overflow: hidden;
       overflow-wrap: anywhere;
     }
@@ -741,34 +505,17 @@
     .preview {
       flex: 1 1 auto;
       min-height: 0;
-      overflow: hidden;
-
       padding: 16px;
       border: 1px solid #bacce6;
       border-radius: 12px;
-      background: #ffffff;
-
-      box-shadow:
-        inset 0 4px 0 #5e83cf,
-        0 4px 12px rgba(30, 54, 94, .04);
+      overflow: auto;
+      background: white;
+      box-shadow: inset 0 4px 0 #5e83cf;
     }
 
-    .preview h3 {
-      margin: 0 0 8px;
-      color: #203e70;
-      font-size: 19px;
-      font-weight: 750;
-    }
-
-    .preview p {
-      margin: 5px 0;
-      font-size: 14px;
-    }
-
-    #preview-company {
-      color: #425a7c;
-      font-weight: 600;
-    }
+    .preview h3 { margin: 0 0 8px; color: #203e70; font-size: 19px; }
+    .preview p { margin: 5px 0; font-size: 14px; }
+    #preview-company { color: #425a7c; font-weight: 650; }
 
     #job-editor {
       flex: 1 1 auto;
@@ -776,6 +523,15 @@
       align-content: start;
       overflow: auto;
     }
+
+    .source-actions {
+      display: flex;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+      gap: 8px;
+    }
+
+    .source-actions button { padding: 8px 12px; font-size: 13px; }
 
     .editor-note {
       flex: 0 0 auto;
@@ -788,27 +544,14 @@
     .large-editor {
       flex: 1 1 auto;
       min-height: 0;
-      height: 100%;
       resize: none;
       overflow: auto;
-
-      background: #ffffff;
-      border-color: #b8c8df;
       line-height: 1.7;
-    }
-
-    #job-notes {
-      box-shadow: inset 3px 0 0 #c4d4f0;
     }
 
     #job-letter {
       cursor: text;
-      border-color: #b5c8e5;
       box-shadow: inset 3px 0 0 #9eb9e8;
-    }
-
-    #job-letter:hover {
-      border-color: #7398d5;
     }
 
     .letter-tools {
@@ -819,44 +562,25 @@
       gap: 10px;
     }
 
-    .letter-tools label {
-      margin: 0;
-      color: #234778;
-      font-weight: 750;
-    }
-
-    .letter-tools button {
-      padding: 7px 11px;
-      font-size: 13px;
-    }
+    .letter-tools button { padding: 7px 11px; font-size: 13px; }
 
     .drop-zone {
       flex: 0 0 auto;
       padding: 12px 16px;
-
       border: 2px dashed #8eaee1;
       border-radius: 12px;
       background: #eaf1ff;
-
       color: #375c96;
       text-align: center;
       line-height: 1.5;
       cursor: pointer;
     }
 
-    .drop-zone strong {
-      display: block;
-      color: #2d528c;
-      font-size: 14px;
-      font-weight: 650;
-    }
+    .drop-zone strong { display: block; font-size: 14px; }
 
-    .drop-zone:hover,
-    #add-dialog.drag-active .drop-zone {
+    .drop-zone:hover, #add-dialog.drag-active .drop-zone {
       background: #dce8ff;
       border-color: var(--blue);
-      color: #1d47a2;
-      box-shadow: inset 0 0 0 1px #b3c8ef;
     }
 
     .upload-indicator {
@@ -865,7 +589,6 @@
       align-items: center;
       gap: 7px;
       min-width: 0;
-
       color: #64748b;
       font-size: 12px;
     }
@@ -875,32 +598,12 @@
       height: 7px;
       flex: 0 0 auto;
       border-radius: 50%;
-      background: #a4afbf;
+      background: currentColor;
     }
 
-    .upload-indicator.success {
-      color: #23815e;
-    }
-
-    .upload-indicator.success .upload-dot {
-      background: #2a9b71;
-    }
-
-    .upload-indicator.loading {
-      color: #315cc9;
-    }
-
-    .upload-indicator.loading .upload-dot {
-      background: #315cc9;
-    }
-
-    .upload-indicator.error {
-      color: #b42332;
-    }
-
-    .upload-indicator.error .upload-dot {
-      background: #c83e52;
-    }
+    .upload-indicator.success { color: #23815e; }
+    .upload-indicator.loading { color: #315cc9; }
+    .upload-indicator.error { color: #b42332; }
 
     #upload-message {
       overflow: hidden;
@@ -908,15 +611,11 @@
       white-space: nowrap;
     }
 
-    /* Fixed Add Job footer */
-
     .add-footer {
       flex: 0 0 auto;
       padding: 12px 24px 18px;
-
       background: #eaf0f9;
       border-top: 2px solid #bdcde5;
-      box-shadow: 0 -5px 14px rgba(30, 54, 94, .055);
     }
 
     .date-row {
@@ -926,22 +625,9 @@
       margin-bottom: 12px;
     }
 
-    .date-row label {
-      flex: 0 0 auto;
-      color: #344f76;
-    }
-
-    .date-row input {
-      width: 170px;
-      padding: 7px 10px;
-      border-color: #afc1dc;
-    }
-
-    .date-row .small {
-      flex: 1;
-      margin: 0;
-      color: #5a6e89;
-    }
+    .date-row label { flex: 0 0 auto; }
+    .date-row input { width: 170px; padding: 7px 10px; }
+    .date-row .small { flex: 1; margin: 0; }
 
     .footer-buttons {
       display: flex;
@@ -950,30 +636,15 @@
       gap: 10px;
     }
 
-    .retry-button {
-      margin-right: auto;
-    }
+    #retry { margin-right: auto; }
+    .footer-spacer { flex: 1; }
 
-    .footer-spacer {
-      flex: 1;
-    }
-
-    .footer-buttons #job-status {
+    #job-status {
       flex: 0 1 170px;
       width: 170px;
       min-width: 0;
-      padding: 10px 12px;
-
-      background: #ffffff;
-      border-color: #afc1dc;
       color: #2856a3;
       font-weight: 650;
-      cursor: pointer;
-    }
-
-    .footer-buttons #job-status:disabled {
-      opacity: .6;
-      cursor: wait;
     }
 
     #form-error {
@@ -981,13 +652,10 @@
       margin: 0 24px 10px;
       padding: 9px 12px;
       border-radius: 9px;
-
       background: #fff0f2;
       color: #a62739;
       font-size: 13px;
     }
-
-    /* Job details */
 
     #detail-dialog {
       width: min(850px, calc(100vw - 24px));
@@ -1001,28 +669,21 @@
       gap: 16px;
     }
 
-    .dialog-heading h2 {
-      overflow-wrap: anywhere;
-    }
+    .dialog-heading h2 { overflow-wrap: anywhere; }
 
     .detail-meta {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-
       padding: 14px;
       border: 1px solid #d3deed;
       border-radius: 12px;
       background: #f1f5fb;
-
-      font-size: 14px;
       color: #526078;
+      font-size: 14px;
     }
 
-    .detail-meta p {
-      margin: 0;
-      overflow-wrap: anywhere;
-    }
+    .detail-meta p { margin: 0; overflow-wrap: anywhere; }
 
     .letter-summary {
       display: flex;
@@ -1030,10 +691,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-
       margin-top: 18px;
       padding: 14px 16px;
-
       border: 1px solid #b4c8eb;
       border-radius: 12px;
       background: #e8efff;
@@ -1046,9 +705,7 @@
       border-top: 2px solid #d8e1ee;
     }
 
-    .detail-section h2 {
-      color: #284a7d;
-    }
+    .detail-section h2 { color: #284a7d; }
 
     .pre {
       white-space: pre-wrap;
@@ -1060,40 +717,25 @@
       margin: 16px 0;
       padding: 12px;
       border-radius: 10px;
-
       background: #eef3ff;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
 
-    .status.success {
-      background: #e7f8ee;
-      color: #1f6c4d;
-    }
-
-    .status.error {
-      background: #fff0f2;
-      color: #a62739;
-    }
+    .status.success { background: #e7f8ee; color: #1f6c4d; }
+    .status.error { background: #fff0f2; color: #a62739; }
 
     .experience-highlight {
       padding: 1px 4px;
       border-radius: 4px;
-
       background: #ffe79a;
       color: #654300;
-      box-shadow: inset 0 -1px 0 #e8c456;
-
       font-weight: 650;
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
     }
 
-    summary {
-      padding: 12px 0;
-      color: #315cc9;
-      cursor: pointer;
-    }
+    summary { padding: 12px 0; color: #315cc9; cursor: pointer; }
 
     .dialog-actions {
       display: flex;
@@ -1102,12 +744,9 @@
       margin-top: 24px;
     }
 
-    /* Full-screen cover letter */
-
     #letter-editor-dialog {
       width: calc(100vw - 24px);
       height: calc(var(--available-height) - 24px);
-      max-height: calc(var(--available-height) - 24px);
       padding: 0;
       overflow: hidden;
     }
@@ -1118,72 +757,48 @@
     }
 
     .letter-editor-header {
-      flex: 0 0 auto;
       display: flex;
+      flex: 0 0 auto;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-
       padding: 16px 22px;
-      background: #ffffff;
       border-bottom: 2px solid #c8d6e9;
     }
 
-    .letter-editor-header h2 {
-      margin: 0 0 4px;
-      color: #203f75;
-      font-size: 20px;
-    }
-
-    .letter-editor-header p {
-      margin: 0;
-      color: #64748b;
-      font-size: 13px;
-    }
+    .letter-editor-header h2 { margin: 0 0 4px; font-size: 20px; }
+    .letter-editor-header p { margin: 0; font-size: 13px; color: #64748b; }
 
     .letter-editor-body {
-      flex: 1 1 auto;
       display: flex;
-      flex-direction: column;
+      flex: 1 1 auto;
       min-height: 0;
-
       padding: 18px 22px;
       background: #eaf0f7;
     }
 
     #letter-editor-text {
-      flex: 1 1 auto;
+      flex: 1;
       min-height: 0;
-      width: 100%;
       resize: none;
       overflow: auto;
-
       padding: 24px clamp(16px, 5vw, 80px);
-      background: #ffffff;
-      border-color: #b7c8df;
-      box-shadow: 0 4px 16px rgba(30, 54, 94, .055);
-
       font-size: 16px;
       line-height: 1.9;
     }
 
     .letter-editor-footer {
-      flex: 0 0 auto;
       display: flex;
+      flex: 0 0 auto;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-
       padding: 14px 22px 18px;
       background: #eaf0f9;
       border-top: 2px solid #bdcde5;
     }
 
-    .letter-editor-footer .buttons {
-      display: flex;
-      flex: 0 0 auto;
-      gap: 10px;
-    }
+    .letter-editor-footer .buttons { display: flex; gap: 10px; }
 
     #letter-editor-message {
       margin: 0;
@@ -1192,24 +807,18 @@
       overflow-wrap: anywhere;
     }
 
-    #letter-editor-message.error {
-      color: #b42332;
-    }
-
-    /* Notifications */
+    #letter-editor-message.error { color: #b42332; }
 
     #toasts {
       position: fixed;
       top: calc(var(--header-height) + 12px);
       right: 20px;
       z-index: 1000;
-
       display: grid;
       gap: 12px;
       width: min(410px, calc(100vw - 32px));
       max-height: calc(100dvh - var(--header-height) - 32px);
       overflow: auto;
-
       pointer-events: none;
     }
 
@@ -1217,31 +826,17 @@
       display: grid;
       grid-template-columns: 1fr 24px;
       gap: 12px;
-
       padding: 18px;
-      border: 1px solid #ffffff;
+      border: 1px solid white;
       border-radius: 16px;
-      background: linear-gradient(145deg, #d8faec, #ffffff);
-      box-shadow: 0 12px 35px rgba(37, 59, 98, .15);
-
+      background: linear-gradient(145deg, #d8faec, white);
+      box-shadow: 0 12px 35px #253b6226;
       pointer-events: auto;
     }
 
-    .toast.error {
-      background: linear-gradient(145deg, #ffe5e8, #ffffff);
-    }
-
-    .toast h3 {
-      margin: 0 0 5px;
-      font-size: 16px;
-    }
-
-    .toast p {
-      margin: 0;
-      font-size: 14px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
+    .toast.error { background: linear-gradient(145deg, #ffe5e8, white); }
+    .toast h3 { margin: 0 0 5px; font-size: 16px; }
+    .toast p { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
 
     .toast button {
       align-self: start;
@@ -1251,182 +846,53 @@
       font-size: 22px;
     }
 
-    /* Responsive layout */
-
     @media (max-width: 760px) {
-      .site-header {
-        grid-template-columns: 145px minmax(0, 1fr);
-      }
-
-      .brand {
-        padding: 0 16px;
-        font-size: 20px;
-      }
-
-      #breadcrumb {
-        padding: 0 14px;
-        font-size: 12px;
-      }
-
-      .app {
-        grid-template-columns: 1fr;
-      }
+      .site-header { grid-template-columns: 145px minmax(0, 1fr); }
+      .brand { padding: 0 16px; font-size: 20px; }
+      #breadcrumb { padding: 0 14px; font-size: 12px; }
+      .app { grid-template-columns: 1fr; }
 
       .sidebar {
         position: static;
         height: auto;
         padding: 16px 20px;
-
         border-right: 0;
-        border-bottom: 1px solid var(--border);
-        box-shadow: none;
+        border-bottom: 1px solid #cbd5e4;
       }
 
-      .heading-copy {
-        flex-basis: 100%;
-      }
+      .heading-copy { flex-basis: 100%; }
+      .toolbar { width: 100%; }
+      .search-field { flex: 1 1 100%; width: 100%; }
+      .detail-meta { grid-template-columns: 1fr; }
+      #detail-dialog { margin: auto; }
 
-      .toolbar {
-        width: 100%;
-      }
+      .add-header { padding: 14px 16px; }
+      .modal-tabs { padding: 10px 16px; }
+      #add-fields { padding: 14px 16px; }
+      .add-footer { padding: 10px 16px 14px; }
+      #form-error { margin-left: 16px; margin-right: 16px; }
+      .date-row .small { display: none; }
 
-      .search-field {
-        flex: 1 1 100%;
-        width: 100%;
-      }
+      .footer-buttons { gap: 8px; }
+      .footer-buttons button { padding: 9px 11px; font-size: 13px; }
+      #job-status { flex-basis: 150px; width: 150px; font-size: 13px; }
+      .grid { gap: 10px; }
 
-      .detail-meta {
-        grid-template-columns: 1fr;
-      }
-
-      #detail-dialog {
-        margin: auto;
-      }
-
-      .add-header {
-        padding: 14px 16px;
-      }
-
-      .modal-tabs {
-        padding: 10px 16px;
-      }
-
-      #add-fields {
-        padding: 14px 16px;
-      }
-
-      .add-footer {
-        padding: 10px 16px 14px;
-      }
-
-      #form-error {
-        margin-left: 16px;
-        margin-right: 16px;
-      }
-
-      .date-row .small {
-        display: none;
-      }
-
-      .footer-buttons {
-        gap: 8px;
-      }
-
-      .footer-buttons button {
-        padding: 9px 11px;
-        font-size: 13px;
-      }
-
-      .footer-buttons #job-status {
-        flex-basis: 150px;
-        width: 150px;
-        padding: 9px 10px;
-        font-size: 13px;
-      }
-
-      .grid {
-        gap: 10px;
-      }
-
-      .preview h3 {
-        font-size: 17px;
-      }
-
-      .letter-editor-header {
-        padding: 12px 14px;
-      }
-
-      .letter-editor-body {
-        padding: 10px 14px;
-      }
-
-      .letter-editor-footer {
-        align-items: flex-start;
-        padding: 10px 14px 14px;
-      }
-
-      #letter-editor-text {
-        padding: 14px;
-        font-size: 15px;
-      }
+      .letter-editor-header { padding: 12px 14px; }
+      .letter-editor-body { padding: 10px 14px; }
+      .letter-editor-footer { padding: 10px 14px 14px; }
+      #letter-editor-text { padding: 14px; font-size: 15px; }
     }
 
     @media (max-height: 580px) {
-      .add-header {
-        padding-top: 8px;
-        padding-bottom: 8px;
-      }
-
-      .add-header h2 {
-        font-size: 18px;
-      }
-
-      .modal-tabs {
-        padding-top: 6px;
-        padding-bottom: 6px;
-      }
-
-      .modal-tabs button {
-        padding-top: 7px;
-        padding-bottom: 7px;
-      }
-
-      #add-fields {
-        padding-top: 10px;
-        padding-bottom: 10px;
-      }
-
-      .tab-panel {
-        gap: 8px;
-      }
-
-      .date-row {
-        margin-bottom: 8px;
-      }
-
-      .preview {
-        padding: 10px;
-      }
-
-      .preview p {
-        margin: 2px 0;
-      }
-
-      #job-editor {
-        gap: 8px;
-      }
-
-      #job-editor input {
-        padding: 7px 9px;
-      }
-
-      #job-editor label {
-        font-size: 12px;
-      }
-
-      .drop-zone {
-        padding: 7px 10px;
-      }
+      .add-header { padding-top: 8px; padding-bottom: 8px; }
+      .add-header h2 { font-size: 18px; }
+      .modal-tabs { padding-top: 6px; padding-bottom: 6px; }
+      .modal-tabs button { padding-top: 7px; padding-bottom: 7px; }
+      #add-fields { padding-top: 10px; padding-bottom: 10px; }
+      .tab-panel { gap: 8px; }
+      .date-row { margin-bottom: 8px; }
+      .modes button { padding: 6px 9px; }
     }
   </style>
 </head>
@@ -1442,11 +908,7 @@
       <nav class="nav" aria-label="主要導覽">
         <a href="/" data-nav="home">⌕ Find Jobs</a>
         <a href="/profile" data-nav="profile">○ My Profile</a>
-        <a
-          href="/profile/my-jobs"
-          class="subnav"
-          data-nav="jobs"
-        >
+        <a href="/profile/my-jobs" class="subnav" data-nav="jobs">
           ▤ My Jobs
         </a>
       </nav>
@@ -1456,18 +918,10 @@
       <section id="home-page" hidden>
         <div class="hero">
           <h1>Find your next opportunity.</h1>
-
-          <p class="muted">
-            集中整理香港求職機會，追蹤你的每一步申請。
-          </p>
-
+          <p class="muted">集中整理香港求職機會，追蹤你的每一步申請。</p>
           <div class="actions">
-            <a class="button primary" href="/profile/my-jobs">
-              Open My Jobs
-            </a>
-            <a class="button" href="/profile">
-              My Profile
-            </a>
+            <a class="button primary" href="/profile/my-jobs">Open My Jobs</a>
+            <a class="button" href="/profile">My Profile</a>
           </div>
         </div>
       </section>
@@ -1475,17 +929,10 @@
       <section id="profile-page" hidden>
         <h1>My Profile</h1>
         <p class="muted">管理你的求職資料與申請紀錄。</p>
-
         <section class="panel">
           <h2>My Jobs</h2>
-
-          <p class="muted">
-            新增、追蹤及查看完整職位詳情。
-          </p>
-
-          <a class="button primary" href="/profile/my-jobs">
-            Manage My Jobs →
-          </a>
+          <p class="muted">新增、追蹤及查看完整職位詳情。</p>
+          <a class="button primary" href="/profile/my-jobs">Manage My Jobs →</a>
         </section>
       </section>
 
@@ -1493,25 +940,17 @@
         <div class="heading">
           <div class="heading-copy">
             <h1>My Jobs</h1>
-
-            <p class="muted">
-              點職位名稱或「查看詳情」，查看完整內容。
-            </p>
+            <p class="muted">點職位名稱或「查看詳情」，查看完整內容。</p>
           </div>
 
           <div class="toolbar">
             <div class="field search-field">
               <label for="search">搜尋職位或公司</label>
-              <input
-                id="search"
-                type="search"
-                placeholder="職位或公司名稱"
-              >
+              <input id="search" type="search" placeholder="職位或公司名稱">
             </div>
 
             <div class="field filter-field">
               <label for="filter">申請狀態</label>
-
               <select id="filter">
                 <option value="">所有狀態</option>
                 <option value="saved">Saved · 已收藏</option>
@@ -1523,131 +962,86 @@
               </select>
             </div>
 
-            <button id="refresh" type="button">
-              重新整理
-            </button>
-
-            <button id="add-job" class="primary" type="button">
-              ＋ Add Job
-            </button>
+            <button id="refresh" type="button">重新整理</button>
+            <button id="add-job" class="primary" type="button">＋ Add Job</button>
           </div>
         </div>
 
-        <p
-          id="list-summary"
-          class="muted"
-          role="status"
-        ></p>
-
+        <p id="list-summary" class="muted" role="status"></p>
         <div id="jobs"></div>
       </section>
 
-      <noscript>
-        <p>請啟用 JavaScript 以使用 JobTrail。</p>
-      </noscript>
+      <noscript>請啟用 JavaScript 以使用 JobTrail。</noscript>
     </main>
   </div>
-
-  <!-- Add Job -->
 
   <dialog id="add-dialog" aria-labelledby="add-title">
     <div class="add-header">
       <h2 id="add-title">Add a job</h2>
-
-      <button
-        id="close-add"
-        type="button"
-        aria-label="關閉新增職位"
-      >
-        ×
-      </button>
+      <button id="close-add" type="button" aria-label="關閉新增職位">×</button>
     </div>
 
     <form id="add-form" novalidate>
-      <div
-        class="modal-tabs"
-        role="tablist"
-        aria-label="新增職位分頁"
-      >
+      <div class="modal-tabs" role="tablist" aria-label="新增職位分頁">
         <button
-          id="tab-job"
-          role="tab"
-          type="button"
-          aria-selected="true"
-          aria-controls="panel-job"
-          data-tab="job"
-        >
-          職位資料
-        </button>
+          id="tab-job" type="button" role="tab"
+          aria-selected="true" aria-controls="panel-job" data-tab="job"
+        >職位資料</button>
 
         <button
-          id="tab-notes"
-          role="tab"
-          type="button"
-          aria-selected="false"
-          aria-controls="panel-notes"
-          data-tab="notes"
-          tabindex="-1"
-        >
-          私人備註
-        </button>
+          id="tab-notes" type="button" role="tab"
+          aria-selected="false" aria-controls="panel-notes"
+          data-tab="notes" tabindex="-1"
+        >私人備註</button>
 
         <button
-          id="tab-letter"
-          role="tab"
-          type="button"
-          aria-selected="false"
-          aria-controls="panel-letter"
-          data-tab="letter"
-          tabindex="-1"
-        >
-          Cover Letter
-        </button>
+          id="tab-letter" type="button" role="tab"
+          aria-selected="false" aria-controls="panel-letter"
+          data-tab="letter" tabindex="-1"
+        >Cover Letter</button>
       </div>
 
       <fieldset id="add-fields">
         <section
-          id="panel-job"
-          class="tab-panel"
-          role="tabpanel"
-          aria-labelledby="tab-job"
+          id="panel-job" class="tab-panel"
+          role="tabpanel" aria-labelledby="tab-job"
         >
           <div class="modes">
-            <button
-              id="mode-link"
-              type="button"
-              aria-pressed="true"
-            >
-              貼上連結 · 自動讀取
+            <button id="mode-link" type="button" aria-pressed="true">
+              JobsDB 連結
             </button>
-
-            <button
-              id="mode-manual"
-              type="button"
-              aria-pressed="false"
-            >
+            <button id="mode-paste" type="button" aria-pressed="false">
+              貼上職位文字
+            </button>
+            <button id="mode-manual" type="button" aria-pressed="false">
               手動輸入
             </button>
           </div>
 
-          <div class="field">
-            <label id="url-label" for="job-url">
-              職位連結 *
-            </label>
-
+          <div id="url-field" class="field">
+            <label id="url-label" for="job-url">JobsDB 職位連結 *</label>
             <input
-              id="job-url"
-              inputmode="url"
+              id="job-url" inputmode="url"
               placeholder="https://hk.jobsdb.com/job/..."
             >
           </div>
 
-          <div
-            id="import-status"
-            class="source-status"
-            role="status"
-          >
-            貼上單一職位連結，自動嘗試讀取。
+         <div id="paste-box">
+            <label for="paste-text">貼上整頁或單一職位內容</label>
+            <p class="editor-note">
+              可包含推薦列表。系統會嘗試找出完整主職位，請核對預覽後再儲存。
+            </p>
+            <textarea
+              id="paste-text" maxlength="200000"
+              placeholder="在招聘網站複製文字，再貼到這裡……"
+            ></textarea>
+            <button id="parse-paste" type="button" class="primary">
+              整理職位資料
+            </button>
+          </div>
+
+          <div id="import-status" class="source-status" role="status">
+            貼上 JobsDB 單一職位連結，自動嘗試讀取。
           </div>
 
           <section id="preview" class="preview" hidden>
@@ -1656,10 +1050,7 @@
             <p id="preview-location" class="muted clamp"></p>
             <p id="preview-salary" class="muted clamp"></p>
             <p id="preview-posted" class="muted clamp"></p>
-
-            <p class="small muted clamp">
-              完整描述會保存，可在儲存後的詳情面板查看。
-            </p>
+            <p id="preview-description" class="small muted clamp"></p>
           </section>
 
           <div id="job-editor" class="grid" hidden>
@@ -1667,117 +1058,75 @@
               <label for="job-title">職位名稱 *</label>
               <input id="job-title" maxlength="200">
             </div>
-
             <div class="field">
               <label for="job-company">公司／刊登者 *</label>
               <input id="job-company" maxlength="200">
             </div>
-
             <div class="field">
               <label for="job-location">地點</label>
               <input id="job-location" maxlength="200">
             </div>
-
             <div class="field">
               <label for="job-salary">薪資</label>
               <input id="job-salary" maxlength="200">
             </div>
-
             <div class="field">
               <label for="job-source">來源</label>
               <input id="job-source" maxlength="200">
             </div>
           </div>
 
-          <button id="edit-info" type="button" hidden>
-            編輯已讀取資料
-          </button>
+          <div id="source-actions" class="source-actions" hidden>
+            <button id="edit-info" type="button">編輯已整理資料</button>
+            <button id="edit-paste" type="button" hidden>修改貼上文字</button>
+          </div>
         </section>
 
         <section
-          id="panel-notes"
-          class="tab-panel"
-          role="tabpanel"
-          aria-labelledby="tab-notes"
-          hidden
+          id="panel-notes" class="tab-panel"
+          role="tabpanel" aria-labelledby="tab-notes" hidden
         >
           <label for="job-notes">私人備註（選填）</label>
-
-          <p class="editor-note">
-            重新讀取招聘連結不會清空這裡的內容。
-          </p>
-
+          <p class="editor-note">重新讀取或整理職位不會清空這裡。</p>
           <textarea
-            id="job-notes"
-            class="large-editor"
-            maxlength="8000"
+            id="job-notes" class="large-editor" maxlength="8000"
             placeholder="朋友介紹、想問的問題、面試準備……"
           ></textarea>
         </section>
 
         <section
-          id="panel-letter"
-          class="tab-panel"
-          role="tabpanel"
-          aria-labelledby="tab-letter"
-          hidden
+          id="panel-letter" class="tab-panel"
+          role="tabpanel" aria-labelledby="tab-letter" hidden
         >
           <div class="letter-tools">
-            <label for="job-letter">
-              Cover Letter（選填）
-            </label>
-
-            <button id="expand-add-letter" type="button">
-              全螢幕編輯 ↗
-            </button>
+            <label for="job-letter">Cover Letter（選填）</label>
+            <button id="expand-add-letter" type="button">全螢幕編輯 ↗</button>
           </div>
 
           <div
-            id="drop-zone"
-            class="drop-zone"
-            role="button"
-            tabindex="0"
-            aria-label="點擊選擇或拖放 DOCX 或 PDF 求職信"
+            id="drop-zone" class="drop-zone" role="button" tabindex="0"
+            aria-label="選擇或拖放 DOCX 或 PDF 求職信"
           >
-            <strong>
-              拖放求職信到這裡，或點擊選擇檔案
-            </strong>
-
-            <span class="small">
-              DOCX／PDF · 最大 5 MB · 選擇後自動填入
-            </span>
+            <strong>拖放求職信到這裡，或點擊選擇檔案</strong>
+            <span class="small">DOCX／PDF · 最大 5 MB · 選擇後自動填入</span>
           </div>
 
-          <input
-            id="letter-file"
-            type="file"
-            accept=".docx,.pdf"
-            hidden
-          >
+          <input id="letter-file" type="file" accept=".docx,.pdf" hidden>
 
           <div
-            id="upload-indicator"
-            class="upload-indicator"
-            role="status"
-            aria-atomic="true"
+            id="upload-indicator" class="upload-indicator"
+            role="status" aria-atomic="true"
           >
             <span class="upload-dot" aria-hidden="true"></span>
-
-            <span id="upload-message">
-              尚未匯入，可直接點文字框編輯。
-            </span>
+            <span id="upload-message">尚未匯入，可直接點文字框編輯。</span>
           </div>
 
           <p class="editor-note">
-            點文字框即可全螢幕編輯。
-            匯入後仍需儲存職位，才會保存。
+            點文字框即可全螢幕編輯。儲存職位時會一起保存。
           </p>
 
           <textarea
-            id="job-letter"
-            class="large-editor"
-            maxlength="60000"
-            readonly
+            id="job-letter" class="large-editor" maxlength="60000" readonly
             aria-label="求職信預覽，點擊或輸入以展開編輯"
             placeholder="點這裡開始撰寫，或拖入 DOCX／PDF……"
           ></textarea>
@@ -1792,51 +1141,26 @@
         <div class="date-row">
           <label for="job-date">申請日期</label>
           <input id="job-date" type="date">
-
           <p id="date-help" class="small muted">
             未修改時使用儲存當天的香港日期，可自行修改。
           </p>
         </div>
 
         <div class="footer-buttons">
-          <button
-            id="retry"
-            class="retry-button"
-            type="button"
-          >
-            重新讀取
-          </button>
+          <button id="retry" type="button">重新讀取</button>
+          <span id="footer-spacer" class="footer-spacer" hidden></span>
+          <button id="cancel-add" type="button">取消</button>
 
-          <span
-            id="footer-spacer"
-            class="footer-spacer"
-            hidden
-          ></span>
-
-          <button id="cancel-add" type="button">
-            取消
-          </button>
-
-          <select
-            id="job-status"
-            aria-label="新增職位的申請狀態"
-          >
+          <select id="job-status" aria-label="新增職位的申請狀態">
             <option value="saved">Saved · 已收藏</option>
-            <option value="applied" selected>
-              Applied · 已申請
-            </option>
+            <option value="applied" selected>Applied · 已申請</option>
             <option value="interview">Interview · 面試中</option>
             <option value="offer">Offer · 已獲聘</option>
             <option value="rejected">Rejected · 未獲取錄</option>
             <option value="closed">Closed · 已結束</option>
           </select>
 
-          <button
-            id="save-job"
-            class="primary"
-            type="submit"
-            disabled
-          >
+          <button id="save-job" class="primary" type="submit" disabled>
             確認並儲存
           </button>
         </div>
@@ -1844,22 +1168,13 @@
     </form>
   </dialog>
 
-  <!-- Job details -->
-
   <dialog id="detail-dialog" aria-labelledby="detail-title">
     <div class="dialog-heading">
       <div>
         <h2 id="detail-title"></h2>
         <p id="detail-company" class="muted"></p>
       </div>
-
-      <button
-        id="close-detail"
-        type="button"
-        aria-label="關閉詳情"
-      >
-        ×
-      </button>
+      <button id="close-detail" type="button" aria-label="關閉詳情">×</button>
     </div>
 
     <div id="detail-meta" class="detail-meta"></div>
@@ -1869,63 +1184,40 @@
         <div>Cover Letter</div>
         <div id="saved-letter-status" class="small muted"></div>
       </div>
-
-      <button
-        id="open-saved-letter"
-        class="primary"
-        type="button"
-      >
+      <button id="open-saved-letter" class="primary" type="button">
         查看／編輯完整求職信 ↗
       </button>
     </div>
 
     <p class="small muted">
       申請日期是你的追蹤紀錄，不代表系統確認已送出申請。
-      來源到期日期不保證等同申請截止日期。
+      來源到期日期不一定是申請截止日期。
     </p>
 
     <div class="actions">
       <a
-        id="detail-link"
-        class="button"
-        target="_blank"
+        id="detail-link" class="button" target="_blank"
         rel="noopener noreferrer"
-      >
-        原始職位連結
-      </a>
-
-      <button id="fill-details" type="button">
-        補上缺少的來源詳情
-      </button>
+      >原始職位連結</a>
+      <button id="fill-details" type="button">補上缺少的來源詳情</button>
     </div>
 
     <details>
       <summary>已保存的來源詳情不正確？</summary>
-
       <p class="small muted">
         重新讀取會取代來源描述、職責、要求和來源日期，
-        不修改申請日期、私人備註或求職信。
+        不修改私人備註、申請日期或求職信。
       </p>
-
-      <button id="replace-details" type="button">
-        重新讀取並取代來源詳情
-      </button>
+      <button id="replace-details" type="button">重新讀取並取代來源詳情</button>
     </details>
 
-    <div
-      id="detail-feedback"
-      class="status"
-      role="status"
-      hidden
-    ></div>
+    <div id="detail-feedback" class="status" role="status" hidden></div>
 
     <section class="detail-section">
       <h2>申請狀態及日期</h2>
-
       <div class="grid">
         <div class="field">
           <label for="detail-status">狀態</label>
-
           <select id="detail-status">
             <option value="saved">Saved · 已收藏</option>
             <option value="applied">Applied · 已申請</option>
@@ -1935,19 +1227,13 @@
             <option value="closed">Closed · 已結束</option>
           </select>
         </div>
-
         <div class="field">
           <label for="detail-date">申請日期</label>
           <input id="detail-date" type="date">
         </div>
       </div>
-
       <div class="actions">
-        <button
-          id="save-status"
-          class="primary"
-          type="button"
-        >
+        <button id="save-status" class="primary" type="button">
           儲存狀態及日期
         </button>
       </div>
@@ -1974,85 +1260,50 @@
     </section>
 
     <div class="dialog-actions">
-      <button id="done-detail" type="button">
-        關閉
-      </button>
+      <button id="done-detail" type="button">關閉</button>
     </div>
   </dialog>
 
-  <!-- Full-screen cover letter editor -->
-
-  <dialog
-    id="letter-editor-dialog"
-    aria-labelledby="letter-editor-title"
-  >
+  <dialog id="letter-editor-dialog" aria-labelledby="letter-editor-title">
     <div class="letter-editor-header">
       <div>
         <h2 id="letter-editor-title">Cover Letter</h2>
         <p id="letter-editor-subtitle"></p>
       </div>
-
       <button
-        id="letter-editor-close"
-        type="button"
-        aria-label="取消修改並關閉求職信編輯器"
-      >
-        ×
-      </button>
+        id="letter-editor-close" type="button"
+        aria-label="取消修改並關閉編輯器"
+      >×</button>
     </div>
 
     <div class="letter-editor-body">
       <textarea
-        id="letter-editor-text"
-        maxlength="60000"
-        spellcheck="true"
-        aria-label="完整求職信"
-        placeholder="Dear Hiring Manager, ..."
+        id="letter-editor-text" maxlength="60000" spellcheck="true"
+        aria-label="完整求職信" placeholder="Dear Hiring Manager, ..."
       ></textarea>
     </div>
 
     <div class="letter-editor-footer">
       <p id="letter-editor-message" role="status"></p>
-
       <div class="buttons">
-        <button id="letter-editor-cancel" type="button">
-          取消修改
-        </button>
-
-        <button
-          id="letter-editor-save"
-          class="primary"
-          type="button"
-        >
+        <button id="letter-editor-cancel" type="button">取消修改</button>
+        <button id="letter-editor-save" class="primary" type="button">
           完成編輯
         </button>
       </div>
     </div>
   </dialog>
 
-  <!-- Delete confirmation -->
-
   <dialog id="delete-dialog" aria-labelledby="delete-title">
     <h2 id="delete-title">刪除這個職位？</h2>
     <p id="delete-description" class="pre"></p>
-
     <p class="muted">
-      會移除這筆追蹤紀錄及其求職信，
-      不會刪除原網站的招聘廣告。此操作無法復原。
+      會移除這筆追蹤紀錄及求職信，不會刪除原網站的招聘廣告。
+      此操作無法復原。
     </p>
-
     <div class="dialog-actions">
-      <button id="cancel-delete" type="button" autofocus>
-        取消
-      </button>
-
-      <button
-        id="confirm-delete"
-        class="danger"
-        type="button"
-      >
-        確認刪除
-      </button>
+      <button id="cancel-delete" type="button" autofocus>取消</button>
+      <button id="confirm-delete" class="danger" type="button">確認刪除</button>
     </div>
   </dialog>
 
@@ -2063,7 +1314,7 @@
 
     const $ = id => document.getElementById(id);
 
-    const JOB_STATUS_OPTIONS = [
+    const STATUSES = [
       ["saved", "Saved · 已收藏"],
       ["applied", "Applied · 已申請"],
       ["interview", "Interview · 面試中"],
@@ -2081,11 +1332,8 @@
     };
 
     const sourceDetailKeys = [
-      "description",
-      "responsibilities",
-      "requirements",
-      "posted_at",
-      "apply_by"
+      "description", "responsibilities", "requirements",
+      "posted_at", "apply_by"
     ];
 
     let jobs = [];
@@ -2093,7 +1341,6 @@
     let busy = false;
     let saving = false;
     let uploading = false;
-
     let detailJob = null;
     let selectedJob = null;
 
@@ -2102,69 +1349,54 @@
     let importVersion = 0;
     let importTimer = null;
     let importController = null;
-
     let importedInput = "";
     let importedJob = {};
     let canonicalUrl = "";
     let editing = false;
-
     let applicationDateEdited = false;
 
-    let uploadController = null;
     let uploadVersion = 0;
+    let uploadController = null;
     let dragDepth = 0;
 
     let letterEditorContext = null;
     let letterEditorSaving = false;
 
-    function sameId(a, b) {
-      return String(a) === String(b);
+    const sameId = (a, b) => String(a) === String(b);
+    const statusLabel = value =>
+      STATUSES.find(([key]) => key === value)?.[1] || value;
+
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
     }
 
     function updateAvailableHeight() {
-      const height = window.visualViewport
-        ? window.visualViewport.height
-        : window.innerHeight;
-
+      const height = window.visualViewport?.height || window.innerHeight;
       document.documentElement.style.setProperty(
-        "--available-height",
-        height + "px"
+        "--available-height", height + "px"
       );
     }
 
     updateAvailableHeight();
-
-    window.addEventListener(
-      "resize",
-      updateAvailableHeight
-    );
-
-    window.visualViewport?.addEventListener(
-      "resize",
-      updateAvailableHeight
-    );
+    window.addEventListener("resize", updateAvailableHeight);
+    window.visualViewport?.addEventListener("resize", updateAvailableHeight);
 
     const path = location.pathname.replace(/\/+$/, "") || "/";
-
     const page = path === "/profile"
       ? "profile"
-      : ["/profile/my-jobs", "/my-jobs"].includes(path)
-        ? "jobs"
-        : "home";
+      : ["/profile/my-jobs", "/my-jobs"].includes(path) ? "jobs" : "home";
 
     $(page + "-page").hidden = false;
-
     document.title = {
-      home: "Find Jobs",
-      profile: "My Profile",
-      jobs: "My Jobs"
+      home: "Find Jobs", profile: "My Profile", jobs: "My Jobs"
     }[page] + " | JobTrail HK";
 
     $("breadcrumb").textContent = page === "jobs"
       ? "Account / My Profile / My Jobs"
-      : page === "profile"
-        ? "Account / My Profile"
-        : "JobTrail HK / Find Jobs";
+      : page === "profile" ? "Account / My Profile" : "JobTrail HK / Find Jobs";
 
     document.querySelectorAll("[data-nav]").forEach(link => {
       if (link.dataset.nav === page) {
@@ -2173,75 +1405,34 @@
       }
     });
 
-    function el(tag, className, text) {
-      const item = document.createElement(tag);
-
-      if (className) {
-        item.className = className;
-      }
-
-      if (text !== undefined) {
-        item.textContent = text;
-      }
-
-      return item;
-    }
-
-    function statusLabel(value) {
-      return JOB_STATUS_OPTIONS.find(
-        ([key]) => key === value
-      )?.[1] || value;
-    }
-
     function hongKongToday() {
       const values = {};
-
       new Intl.DateTimeFormat("en", {
         timeZone: "Asia/Hong_Kong",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
+        year: "numeric", month: "2-digit", day: "2-digit"
       }).formatToParts(new Date()).forEach(part => {
         values[part.type] = part.value;
       });
-
       return `${values.year}-${values.month}-${values.day}`;
     }
 
     function calendarValue(value) {
-      if (typeof value !== "string") {
-        return "";
-      }
-
-      return value.match(
-        /^(\d{4}-\d{2}-\d{2})/
-      )?.[1] || "";
+      return typeof value === "string"
+        ? value.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] || ""
+        : "";
     }
 
     function dateText(value, withTime = false) {
-      if (!value) {
-        return "未提供";
-      }
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return value;
-      }
-
+      if (!value) return "未提供";
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
       const date = new Date(value);
-
-      if (Number.isNaN(date.getTime())) {
-        return "未提供";
-      }
+      if (Number.isNaN(date.getTime())) return "未提供";
 
       return new Intl.DateTimeFormat("zh-HK", {
         timeZone: "Asia/Hong_Kong",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
+        year: "numeric", month: "2-digit", day: "2-digit",
         ...(withTime ? {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false
+          hour: "2-digit", minute: "2-digit", hour12: false
         } : {})
       }).format(date);
     }
@@ -2251,19 +1442,10 @@
       const body = el("div");
       const close = el("button", "", "×");
 
-      card.setAttribute(
-        "role",
-        type === "error" ? "alert" : "status"
-      );
-
-      body.append(
-        el("h3", "", title),
-        el("p", "", message)
-      );
-
+      card.setAttribute("role", type === "error" ? "alert" : "status");
+      body.append(el("h3", "", title), el("p", "", message));
       close.type = "button";
       close.setAttribute("aria-label", "關閉通知");
-
       card.append(body, close);
       $("toasts").append(card);
 
@@ -2273,10 +1455,7 @@
       let dismissed = false;
 
       function dismiss() {
-        if (dismissed) {
-          return;
-        }
-
+        if (dismissed) return;
         dismissed = true;
         clearTimeout(timer);
         card.remove();
@@ -2286,25 +1465,15 @@
         if (timer !== null) {
           clearTimeout(timer);
           timer = null;
-
-          remaining = Math.max(
-            0,
-            remaining - (Date.now() - started)
-          );
+          remaining = Math.max(0, remaining - (Date.now() - started));
         }
       }
 
       function resume() {
         if (
-          dismissed ||
-          type === "error" ||
-          timer !== null ||
-          card.matches(":hover") ||
-          card.contains(document.activeElement)
-        ) {
-          return;
-        }
-
+          dismissed || type === "error" || timer !== null ||
+          card.matches(":hover") || card.contains(document.activeElement)
+        ) return;
         started = Date.now();
         timer = setTimeout(dismiss, remaining);
       }
@@ -2314,7 +1483,6 @@
       card.onmouseleave = resume;
       card.onfocusin = pause;
       card.onfocusout = () => setTimeout(resume, 0);
-
       resume();
     }
 
@@ -2324,19 +1492,12 @@
       try {
         response = await fetch(url, {
           ...options,
-          headers: {
-            Accept: "application/json",
-            ...(options.headers || {})
-          }
+          headers: { Accept: "application/json", ...(options.headers || {}) }
         });
       } catch (error) {
-        if (error.name === "AbortError") {
-          throw error;
-        }
-
+        if (error.name === "AbortError") throw error;
         throw new Error(
-          "無法連接伺服器；若剛才有儲存或刪除，" +
-          "請先重新整理確認結果，避免重複操作。"
+          "無法連接伺服器。若剛才有儲存或刪除，請重新整理確認結果，避免重複操作。"
         );
       }
 
@@ -2344,20 +1505,15 @@
 
       if (!response.ok) {
         const detail = body?.detail;
-
         const message = typeof detail === "string"
           ? detail
           : Array.isArray(detail)
             ? detail.map(item =>
-                (item.loc || []).join(" → ") +
-                ": " + item.msg
+                (item.loc || []).join(" → ") + ": " + item.msg
               ).join("\n")
             : detail?.message || "操作未完成";
 
-        const error = new Error(
-          message + "（HTTP " + response.status + "）"
-        );
-
+        const error = new Error(message + "（HTTP " + response.status + "）");
         error.status = response.status;
         throw error;
       }
@@ -2368,151 +1524,65 @@
     function write(url, method, data) {
       return api(url, {
         method,
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       });
     }
 
     async function fetchSavedJob(id) {
       const result = await api("/jobs/" + id);
-
-      if (
-        !result ||
-        !sameId(result.id, id) ||
-        typeof result.status !== "string"
-      ) {
+      if (!result || !sameId(result.id, id)) {
         throw new Error("職位回應格式不正確。");
       }
-
       return result;
     }
 
     function replaceLocalJob(updated) {
-      jobs = jobs.map(job =>
-        sameId(job.id, updated.id) ? updated : job
-      );
-
-      if (
-        detailJob &&
-        sameId(detailJob.id, updated.id)
-      ) {
-        drawDetail(updated);
-      }
-
+      jobs = jobs.map(job => sameId(job.id, updated.id) ? updated : job);
+      if (detailJob && sameId(detailJob.id, updated.id)) drawDetail(updated);
       render();
     }
 
-    const tabButtons = [
-      ...document.querySelectorAll("[data-tab]")
-    ];
-
-    function setTab(name, focus = false) {
-      for (const key of ["job", "notes", "letter"]) {
-        const active = key === name;
-
-        $("panel-" + key).hidden = !active;
-
-        $("tab-" + key).setAttribute(
-          "aria-selected",
-          String(active)
-        );
-
-        $("tab-" + key).tabIndex = active ? 0 : -1;
+    async function persistPatch(job, patch) {
+      await write("/jobs/" + job.id, "PATCH", patch);
+      let updated = { ...job, ...patch };
+      let stale = false;
+      try {
+        updated = await fetchSavedJob(job.id);
+      } catch (_) {
+        stale = true;
       }
-
-      if (focus) {
-        $("tab-" + name).focus();
-      }
+      replaceLocalJob(updated);
+      return { updated, stale };
     }
 
-    tabButtons.forEach((button, index) => {
-      button.onclick = () => {
-        if (!saving) {
-          setTab(button.dataset.tab);
+    function safeLink(target, value) {
+      target.hidden = true;
+      target.removeAttribute("href");
+      try {
+        const url = new URL(value);
+        if (["http:", "https:"].includes(url.protocol)) {
+          target.href = url.href;
+          target.hidden = false;
         }
-      };
+      } catch (_) {}
+    }
 
-      button.addEventListener("keydown", event => {
-        if (
-          saving ||
-          !["ArrowLeft", "ArrowRight"].includes(event.key)
-        ) {
-          return;
-        }
+    function detailMessage(message, kind = "") {
+      $("detail-feedback").textContent = message;
+      $("detail-feedback").className = "status " + kind;
+      $("detail-feedback").hidden = false;
+    }
 
-        event.preventDefault();
+    function sourceMessage(message, kind = "") {
+      $("import-status").textContent = message;
+      $("import-status").className = "source-status " + kind;
+    }
 
-        const direction = event.key === "ArrowRight"
-          ? 1
-          : -1;
-
-        const next = (
-          index + direction + tabButtons.length
-        ) % tabButtons.length;
-
-        setTab(tabButtons[next].dataset.tab, true);
-      });
-    });
-
-    function syncControls() {
-      document.querySelectorAll(".job-status-select")
-        .forEach(select => {
-          select.disabled = busy;
-        });
-
-      $("add-job").disabled = busy;
-      $("refresh").disabled = busy;
-
-      $("save-status").disabled = busy;
-      $("detail-status").disabled = busy;
-      $("detail-date").disabled = busy;
-
-      $("close-detail").disabled = busy;
-      $("done-detail").disabled = busy;
-
-      $("fill-details").disabled =
-        busy || !detailJob?.url;
-
-      $("replace-details").disabled =
-        busy || !detailJob?.url;
-
-      $("open-saved-letter").disabled =
-        busy || !detailJob;
-
-      $("expand-add-letter").disabled =
-        saving || uploading;
-
-      // This select now lives in the footer.
-      $("job-status").disabled = saving;
-
-      $("drop-zone").setAttribute(
-        "aria-disabled",
-        String(saving || uploading || busy)
-      );
-
-      const ready = mode === "manual" || (
-        importState === "ready" &&
-        importedInput === $("job-url").value.trim()
-      );
-
-      $("save-job").disabled =
-        busy ||
-        saving ||
-        uploading ||
-        !ready ||
-        !$("job-title").value.trim() ||
-        !$("job-company").value.trim();
-
-      $("retry").hidden = mode !== "link";
-      $("footer-spacer").hidden = mode === "link";
-
-      $("retry").disabled =
-        busy ||
-        saving ||
-        !$("job-url").value.trim() ||
-        ["loading", "waiting"].includes(importState);
+    function uploadMessage(message, kind = "") {
+      $("upload-indicator").className = "upload-indicator " + kind;
+      $("upload-message").textContent = message;
+      $("upload-message").title = message;
     }
 
     function showFormError(message) {
@@ -2521,103 +1591,94 @@
       $("form-error").hidden = false;
     }
 
-    function sourceMessage(message, kind = "") {
-      $("import-status").textContent = message;
-      $("import-status").className =
-        "source-status " + kind;
+    function sourceInput() {
+      return mode === "paste"
+        ? $("paste-text").value.trim()
+        : $("job-url").value.trim();
     }
 
-    function detailMessage(message, kind = "") {
-      $("detail-feedback").textContent = message;
-      $("detail-feedback").className =
-        "status " + kind;
-
-      $("detail-feedback").hidden = false;
-    }
-
-    function uploadMessage(message, kind = "") {
-      $("upload-indicator").className =
-        "upload-indicator " + kind;
-
-      $("upload-message").textContent = message;
-      $("upload-message").title = message;
-    }
-
-    function safeLink(target, value) {
-      target.hidden = true;
-      target.removeAttribute("href");
-
-      try {
-        const url = new URL(value);
-
-        if (["http:", "https:"].includes(url.protocol)) {
-          target.href = url.href;
-          target.hidden = false;
-        }
-      } catch (_) {}
-    }
-
-    function renderExperienceText(target, value, fallback) {
-      const text = typeof value === "string" && value.trim()
-        ? value
-        : fallback;
-
-      target.replaceChildren();
-
-      const english =
-        String.raw`\b(?:(?:at\s+least|minimum(?:\s+of)?|more\s+than|over)\s+)?\d+(?:\.\d+)?(?:\s*(?:[-–—]|to)\s*\d+(?:\.\d+)?)?\s*\+?\s*(?:years?|yrs?)(?:['’])?(?:\s+of)?[^\n.!?;。！？；]{0,100}?\bexperience\b`;
-
-      const chinese =
-        String.raw`(?:至少|最少|不少於|不少于)?\s*\d+(?:\.\d+)?(?:\s*[-–—至到]\s*\d+(?:\.\d+)?)?\s*年(?:以上|或以上)?[^\n。！？；.!?;]{0,50}?(?:經驗|经验)`;
-
-      let cursor = 0;
-
-      for (const match of text.matchAll(
-        new RegExp(english + "|" + chinese, "gi")
-      )) {
-        target.append(
-          document.createTextNode(
-            text.slice(cursor, match.index)
-          )
-        );
-
-        target.append(
-          el("mark", "experience-highlight", match[0])
-        );
-
-        cursor = match.index + match[0].length;
-      }
-
-      target.append(
-        document.createTextNode(text.slice(cursor))
+    function sourceReady() {
+      return mode === "manual" || (
+        importState === "ready" && importedInput === sourceInput()
       );
     }
 
+    function syncControls() {
+      document.querySelectorAll(".job-status-select").forEach(select => {
+        select.disabled = busy;
+      });
+
+      $("add-job").disabled = busy;
+      $("refresh").disabled = busy;
+      $("save-status").disabled = busy;
+      $("detail-status").disabled = busy;
+      $("detail-date").disabled = busy;
+      $("close-detail").disabled = busy;
+      $("done-detail").disabled = busy;
+
+      const jobsdbSource = detailJob?.source === "JobsDB" ||
+        /^https:\/\/hk\.jobsdb\.com\/job\//i.test(detailJob?.url || "");
+
+      $("fill-details").disabled = busy || !detailJob?.url || !jobsdbSource;
+      $("replace-details").disabled = busy || !detailJob?.url || !jobsdbSource;
+      $("open-saved-letter").disabled = busy || !detailJob;
+
+      $("job-status").disabled = saving;
+      $("expand-add-letter").disabled = saving || uploading;
+
+      $("save-job").disabled =
+        busy || saving || uploading || !sourceReady() ||
+        !$("job-title").value.trim() || !$("job-company").value.trim();
+
+      $("retry").hidden = mode !== "link";
+      $("footer-spacer").hidden = mode === "link";
+      $("retry").disabled =
+        busy || saving || !sourceInput() ||
+        ["loading", "waiting"].includes(importState);
+
+      $("parse-paste").disabled =
+        saving || !sourceInput() || importState === "loading";
+
+      $("parse-paste").textContent = importState === "loading" && mode === "paste"
+        ? "正在整理……" : "整理職位資料";
+    }
+
+    function renderExperienceText(target, value) {
+  const text = typeof value === "string" && value.trim()
+    ? value : "未提供／未能可靠分段，請查看完整描述或原始連結。";
+
+
+  const english = String.raw`\b(?:(?:at\s+least|minimum(?:\s+of)?|more\s+than|over)\s+)?\d+(?:\.\d+)?(?:\s*(?:[-–—]|to)\s*\d+(?:\.\d+)?)?\s*\+?\s*(?:years?|yrs?)(?:['’])?(?:\s+of)?[^\n.!?;。！？；]{0,120}?\bexperiences?\b`;
+
+  const chinese = String.raw`(?:至少|最少|不少於|不少于)?\s*\d+(?:\.\d+)?(?:\s*[-–—至到]\s*\d+(?:\.\d+)?)?\s*年(?:以上|或以上)?[^\n。！？；.!?;]{0,60}?(?:經驗|经验)`;
+
+
+  target.replaceChildren();
+  let cursor = 0;
+
+
+  for (const match of text.matchAll(new RegExp(english + "|" + chinese, "gi"))) {
+    target.append(document.createTextNode(text.slice(cursor, match.index)));
+    target.append(el("mark", "experience-highlight", match[0]));
+    cursor = match.index + match[0].length;
+  }
+  target.append(document.createTextNode(text.slice(cursor)));
+}
+
     function createStatusControl(job) {
       const container = el("div", "job-status-control");
-
       const selectId = "job-state-" + job.id;
       const messageId = "job-state-message-" + job.id;
-
       const label = el("label", "", "申請狀態");
       label.htmlFor = selectId;
 
       const select = el("select", "job-status-select");
-
       select.id = selectId;
       select.disabled = busy;
+      select.setAttribute("aria-label", (job.title || "此職位") + "的申請狀態");
+      select.setAttribute("aria-describedby", messageId);
 
-      select.setAttribute(
-        "aria-label",
-        (job.title || "此職位") + "的申請狀態"
-      );
-
-      select.setAttribute(
-        "aria-describedby",
-        messageId
-      );
-
-      for (const [value, text] of JOB_STATUS_OPTIONS) {
+      for (const [value, text] of STATUSES) {
         const option = el("option", "", text);
         option.value = value;
         select.append(option);
@@ -2626,173 +1687,91 @@
       select.value = job.status;
       select.dataset.status = job.status;
 
-      const message = el(
-        "p",
-        "job-status-message",
-        "選擇後自動儲存"
-      );
-
+      const message = el("p", "job-status-message", "選擇後自動儲存");
       message.id = messageId;
       message.setAttribute("role", "status");
-      message.setAttribute("aria-atomic", "true");
 
-      select.addEventListener("change", async () => {
-        const previousStatus = job.status;
-        const nextStatus = select.value;
+      select.onchange = async () => {
+        const previous = job.status;
+        const next = select.value;
 
         if (busy) {
-          select.value = previousStatus;
-          select.dataset.status = previousStatus;
+          select.value = previous;
+          select.dataset.status = previous;
           return;
         }
-
-        if (nextStatus === previousStatus) {
-          return;
-        }
+        if (next === previous) return;
 
         busy = true;
         syncControls();
-
-        select.dataset.status = nextStatus;
-
+        select.dataset.status = next;
         message.className = "job-status-message loading";
         message.textContent = "正在儲存……";
 
-        let updateSucceeded = false;
-
         try {
-          await write(
-            "/jobs/" + job.id,
-            "PATCH",
-            { status: nextStatus }
-          );
-
-          updateSucceeded = true;
-
-          let updated = {
-            ...job,
-            status: nextStatus
-          };
-
-          let refreshFailed = false;
-
-          try {
-            updated = await fetchSavedJob(job.id);
-          } catch (_) {
-            refreshFailed = true;
-          }
-
-          const restoreFocus =
-            document.activeElement === select;
-
-          replaceLocalJob(updated);
-
+          const restoreFocus = document.activeElement === select;
+          const { stale } = await persistPatch(job, { status: next });
           const currentMessage = $(messageId);
 
           if (currentMessage) {
-            currentMessage.className =
-              "job-status-message " +
-              (refreshFailed ? "warning" : "success");
-
-            currentMessage.textContent = refreshFailed
-              ? "✓ 狀態已儲存；其他資料未能重新讀取。"
+            currentMessage.className = "job-status-message success";
+            currentMessage.textContent = stale
+              ? "✓ 已儲存；未能重新讀取完整資料。"
               : "✓ 已儲存";
           } else {
-            toast(
-              "success",
-              "狀態已更新",
-              `「${job.title}」已更新為 ${
-                statusLabel(updated.status)
-              }。`
-            );
+            toast("success", "狀態已更新", statusLabel(next));
           }
 
           if (restoreFocus) {
-            const currentSelect = $(selectId);
-
-            if (currentSelect) {
-              currentSelect.disabled = false;
-              currentSelect.focus();
+            const current = $(selectId);
+            if (current) {
+              current.disabled = false;
+              current.focus();
             } else {
               $("filter").focus();
             }
           }
         } catch (error) {
-          if (!updateSucceeded) {
-            select.value = previousStatus;
-            select.dataset.status = previousStatus;
-
-            message.className = "job-status-message error";
-            message.textContent =
-              "未能確認儲存，請重新整理確認。";
-
-            toast(
-              "error",
-              "未能確認狀態更新",
-              error.message
-            );
-          } else {
-            toast(
-              "error",
-              "狀態已儲存，但畫面未能更新",
-              "請重新整理查看最新結果。"
-            );
-          }
+          select.value = previous;
+          select.dataset.status = previous;
+          message.className = "job-status-message error";
+          message.textContent = "未能確認儲存，請重新整理確認。";
+          toast("error", "未能確認狀態更新", error.message);
         } finally {
           busy = false;
           syncControls();
         }
-      });
+      };
 
       container.append(label, select, message);
-
       return container;
     }
 
     function render() {
-      if (!loaded) {
-        return;
-      }
-
+      if (!loaded) return;
       const query = $("search").value.trim().toLowerCase();
       const status = $("filter").value;
 
       const visible = jobs.filter(job =>
         ((job.title || "") + " " + (job.company || ""))
-          .toLowerCase()
-          .includes(query) &&
+          .toLowerCase().includes(query) &&
         (!status || job.status === status)
       );
 
       $("list-summary").textContent =
         `顯示 ${visible.length} 筆，共 ${jobs.length} 筆職位`;
-
       $("jobs").replaceChildren();
 
       if (!visible.length) {
-        $("jobs").append(
-          el(
-            "div",
-            "empty",
-            jobs.length
-              ? "找不到符合條件的職位。"
-              : "尚未儲存職位，按 Add Job 新增。"
-          )
-        );
-
+        $("jobs").append(el("div", "empty", jobs.length
+          ? "找不到符合條件的職位。" : "尚未儲存職位，按 Add Job 新增。"));
         return;
       }
 
       visible.forEach(job => {
         const card = el("article", "job");
         const heading = el("h2");
-
-        const title = el(
-          "button",
-          "job-title",
-          job.title || "未命名職位"
-        );
-
+        const title = el("button", "job-title", job.title || "未命名職位");
         title.type = "button";
         title.onclick = () => openDetail(job);
         heading.append(title);
@@ -2801,110 +1780,56 @@
           createStatusControl(job),
           heading,
           el("p", "company", job.company || "未提供"),
-          el(
-            "p",
-            "meta",
-            "地點：" + (job.location || "未提供")
-          ),
-          el(
-            "p",
-            "meta",
-            "薪資：" + (job.salary || "未提供")
-          ),
-          el(
-            "p",
-            "meta",
-            "來源：" + (job.source || "未提供")
-          ),
-          el(
-            "p",
-            "meta",
-            "刊登日期：" + dateText(job.posted_at)
-          ),
-          el(
-            "p",
-            "meta",
-            "申請日期：" +
-            (calendarValue(job.applied_at) || "尚未記錄")
-          ),
-          el(
-            "p",
-            "meta",
-            "Cover Letter：" +
-            (job.cover_letter ? "已保存" : "未填寫")
-          )
+          el("p", "meta", "地點：" + (job.location || "未提供")),
+          el("p", "meta", "薪資：" + (job.salary || "未提供")),
+          el("p", "meta", "來源：" + (job.source || "未提供")),
+          el("p", "meta", "刊登日期：" + dateText(job.posted_at)),
+          el("p", "meta", "申請日期：" +
+            (calendarValue(job.applied_at) || "尚未記錄")),
+          el("p", "meta", "Cover Letter：" +
+            (job.cover_letter ? "已保存" : "未填寫"))
         );
 
         const actions = el("div", "actions");
-
         const view = el("button", "", "查看詳情");
         const link = el("a", "button", "原始職位連結");
+        const remove = el("button", "danger", "Delete · 刪除");
 
-        const remove = el(
-          "button",
-          "danger",
-          "Delete · 刪除"
-        );
-
-        view.type = "button";
-        remove.type = "button";
-
+        view.type = remove.type = "button";
         view.onclick = () => openDetail(job);
-
         link.target = "_blank";
         link.rel = "noopener noreferrer";
         safeLink(link, job.url);
 
         remove.onclick = () => {
-          if (busy) {
-            return;
-          }
-
+          if (busy) return;
           selectedJob = job;
-
           $("delete-description").textContent =
             `刪除「${job.title}」— ${job.company}？`;
-
           $("delete-dialog").showModal();
         };
 
         actions.append(view, link, remove);
         card.append(actions);
-
         $("jobs").append(card);
       });
     }
 
     async function loadJobs() {
-      if (busy) {
-        return;
-      }
-
+      if (busy) return;
       busy = true;
       syncControls();
-
       $("list-summary").textContent = "正在載入……";
 
       try {
         const result = await api("/jobs");
-
-        if (!Array.isArray(result)) {
-          throw new Error("職位清單格式不正確。");
-        }
-
+        if (!Array.isArray(result)) throw new Error("職位清單格式不正確。");
         jobs = result;
         loaded = true;
-
         render();
       } catch (error) {
-        $("list-summary").textContent =
-          "載入失敗，請重新整理。";
-
-        toast(
-          "error",
-          "載入失敗",
-          error.message
-        );
+        $("list-summary").textContent = "載入失敗，請重新整理。";
+        toast("error", "載入失敗", error.message);
       } finally {
         busy = false;
         syncControls();
@@ -2913,150 +1838,77 @@
 
     function drawDetail(job) {
       detailJob = job;
-
       $("detail-title").textContent = job.title;
       $("detail-company").textContent = job.company;
-
       $("detail-meta").replaceChildren();
 
-      const pairs = [
+      [
         ["地點", job.location || "未提供"],
         ["薪資", job.salary || "未提供"],
         ["刊登日期", dateText(job.posted_at)],
         ["來源到期日期", dateText(job.apply_by)],
         ["儲存時間", dateText(job.created_at, true)],
-        [
-          "申請日期",
-          calendarValue(job.applied_at) || "尚未記錄"
-        ]
-      ];
-
-      pairs.forEach(([label, value]) => {
-        $("detail-meta").append(
-          el("p", "", label + "：" + value)
-        );
+        ["申請日期", calendarValue(job.applied_at) || "尚未記錄"]
+      ].forEach(([label, value]) => {
+        $("detail-meta").append(el("p", "", label + "：" + value));
       });
 
-      $("saved-letter-status").textContent =
-        job.cover_letter
-          ? `已保存 · ${job.cover_letter.length} 個字元`
-          : "尚未填寫，可直接開啟編輯器新增。";
+      $("saved-letter-status").textContent = job.cover_letter
+        ? `已保存 · ${job.cover_letter.length} 個字元`
+        : "尚未填寫，可直接新增。";
 
-      $("open-saved-letter").textContent =
-        job.cover_letter
-          ? "查看／編輯完整求職信 ↗"
-          : "新增求職信 ↗";
+      $("open-saved-letter").textContent = job.cover_letter
+        ? "查看／編輯完整求職信 ↗" : "新增求職信 ↗";
 
-      for (const key of [
-        "responsibilities",
-        "requirements",
-        "description"
-      ]) {
-        renderExperienceText(
-          $("detail-" + key),
-          job[key],
-          "未提供／未能可靠分段，請查看完整描述或原始連結。"
-        );
+      for (const key of ["responsibilities", "requirements", "description"]) {
+        renderExperienceText($("detail-" + key), job[key]);
       }
 
-      $("detail-notes").textContent =
-        job.notes || "未填寫";
-
+      $("detail-notes").textContent = job.notes || "未填寫";
       $("detail-status").value = job.status;
-
-      $("detail-date").value =
-        calendarValue(job.applied_at);
-
+      $("detail-date").value = calendarValue(job.applied_at);
       safeLink($("detail-link"), job.url);
-
       syncControls();
     }
 
     function openDetail(job) {
-      if (busy) {
-        return;
-      }
-
+      if (busy) return;
       $("detail-feedback").hidden = true;
-
       drawDetail(job);
-
       $("detail-dialog").showModal();
       $("detail-dialog").scrollTop = 0;
     }
 
     for (const id of ["close-detail", "done-detail"]) {
       $(id).onclick = () => {
-        if (!busy) {
-          $("detail-dialog").close();
-        }
+        if (!busy) $("detail-dialog").close();
       };
     }
 
     $("detail-dialog").addEventListener("cancel", event => {
-      if (busy) {
-        event.preventDefault();
-      }
+      if (busy) event.preventDefault();
     });
 
     $("save-status").onclick = async () => {
-      if (busy || !detailJob) {
-        return;
-      }
-
+      if (busy || !detailJob) return;
       const job = detailJob;
       const day = $("detail-date").value;
-
-      const payload = {
-        status: $("detail-status").value
-      };
+      const patch = { status: $("detail-status").value };
 
       if (day !== calendarValue(job.applied_at)) {
-        payload.applied_at = day || null;
+        patch.applied_at = day || null;
       }
 
       busy = true;
       syncControls();
 
-      let saved = false;
-
       try {
-        await write(
-          "/jobs/" + job.id,
-          "PATCH",
-          payload
-        );
-
-        saved = true;
-
-        let updated = {
-          ...job,
-          ...payload
-        };
-
-        let refreshFailed = false;
-
-        try {
-          updated = await fetchSavedJob(job.id);
-        } catch (_) {
-          refreshFailed = true;
-        }
-
-        replaceLocalJob(updated);
-
-        detailMessage(
-          refreshFailed
-            ? "狀態及日期已儲存，但未能重新讀取完整資料。"
-            : "狀態及申請日期已儲存。",
-          "success"
-        );
+        const { stale } = await persistPatch(job, patch);
+        detailMessage(stale
+          ? "已儲存，但未能重新讀取完整資料。"
+          : "狀態及申請日期已儲存。", "success");
       } catch (error) {
-        detailMessage(
-          saved
-            ? "資料已儲存，但畫面更新失敗。請重新整理。"
-            : error.message,
-          "error"
-        );
+        detailMessage(error.message, "error");
       } finally {
         busy = false;
         syncControls();
@@ -3064,522 +1916,195 @@
     };
 
     async function refreshDetails(replaceExisting) {
-      if (busy || !detailJob?.url) {
-        return;
-      }
-
+      if (busy || !detailJob?.url) return;
       const job = detailJob;
-
       busy = true;
       syncControls();
-
       detailMessage("正在讀取來源詳情……");
 
-      let saved = false;
-
       try {
-        const result = await write(
-          "/imports/preview",
-          "POST",
-          { url: job.url }
-        );
-
-        if (!result?.job) {
-          throw new Error("來源回應格式不正確。");
-        }
+        const result = await write("/imports/preview", "POST", { url: job.url });
+        if (!result?.job) throw new Error("來源回應格式不正確。");
 
         const patch = {};
-
         for (const key of sourceDetailKeys) {
-          if (
-            result.job[key] &&
-            (replaceExisting || !job[key])
-          ) {
+          if (result.job[key] && (replaceExisting || !job[key])) {
             patch[key] = result.job[key];
           }
         }
 
         if (!Object.keys(patch).length) {
-          detailMessage(
-            "沒有可新增的詳情，原有資料保持不變。"
-          );
-
+          detailMessage("沒有可新增的詳情，原有資料保持不變。");
           return;
         }
 
-        await write(
-          "/jobs/" + job.id,
-          "PATCH",
-          patch
-        );
-
-        saved = true;
-
-        let updated = {
-          ...job,
-          ...patch
-        };
-
-        try {
-          updated = await fetchSavedJob(job.id);
-        } catch (_) {}
-
-        replaceLocalJob(updated);
-
+        await persistPatch(job, patch);
         detailMessage(
           "來源詳情已更新；私人備註、申請日期和求職信保持不變。",
           "success"
         );
       } catch (error) {
-        detailMessage(
-          saved
-            ? "來源詳情已儲存，但畫面更新失敗。請重新整理。"
-            : error.message,
-          "error"
-        );
+        detailMessage(error.message, "error");
       } finally {
         busy = false;
         syncControls();
       }
     }
 
-    $("fill-details").onclick = () => {
-      refreshDetails(false);
-    };
+    $("fill-details").onclick = () => refreshDetails(false);
+    $("replace-details").onclick = () => refreshDetails(true);
 
-    $("replace-details").onclick = () => {
-      refreshDetails(true);
-    };
+    const tabButtons = [...document.querySelectorAll("[data-tab]")];
 
-    function updateLetterEditorCount() {
-      if (letterEditorSaving) {
-        return;
+    function setTab(name, focus = false) {
+      for (const key of ["job", "notes", "letter"]) {
+        const active = key === name;
+        $("panel-" + key).hidden = !active;
+        $("tab-" + key).setAttribute("aria-selected", String(active));
+        $("tab-" + key).tabIndex = active ? 0 : -1;
       }
-
-      $("letter-editor-message").className = "";
-
-      const length = $("letter-editor-text").value.length;
-
-      $("letter-editor-message").textContent =
-        `${length.toLocaleString()} / 60,000 字元`;
+      if (focus) $("tab-" + name).focus();
     }
 
-    function openLetterEditor(kind, initialKey = "") {
-      if (
-        busy ||
-        saving ||
-        uploading ||
-        $("letter-editor-dialog").open
-      ) {
-        return;
-      }
-
-      if (kind === "saved" && !detailJob) {
-        return;
-      }
-
-      letterEditorContext = kind === "add"
-        ? { kind: "add" }
-        : {
-            kind: "saved",
-            jobId: detailJob.id
-          };
-
-      $("letter-editor-text").value = kind === "add"
-        ? $("job-letter").value
-        : detailJob.cover_letter || "";
-
-      $("letter-editor-title").textContent =
-        kind === "add"
-          ? "編輯 Cover Letter"
-          : "Cover Letter · " + detailJob.title;
-
-      $("letter-editor-subtitle").textContent =
-        kind === "add"
-          ? "完成編輯後返回新增視窗；儲存職位時一起保存。"
-          : "查看完整內容，修改後按「儲存求職信」。";
-
-      $("letter-editor-save").textContent =
-        kind === "add"
-          ? "完成編輯"
-          : "儲存求職信";
-
-      $("letter-editor-text").disabled = false;
-      $("letter-editor-save").disabled = false;
-      $("letter-editor-cancel").disabled = false;
-      $("letter-editor-close").disabled = false;
-
-      updateAvailableHeight();
-
-      $("letter-editor-dialog").showModal();
-
-      requestAnimationFrame(() => {
-        const editor = $("letter-editor-text");
-
-        editor.focus();
-
-        if (initialKey) {
-          const addition = initialKey === "Enter"
-            ? "\n"
-            : initialKey;
-
-          editor.value = (
-            editor.value + addition
-          ).slice(0, 60000);
-
-          editor.setSelectionRange(
-            editor.value.length,
-            editor.value.length
-          );
-
-          editor.scrollTop = editor.scrollHeight;
-        } else {
-          editor.setSelectionRange(0, 0);
-          editor.scrollTop = 0;
-        }
-
-        updateLetterEditorCount();
-      });
-    }
-
-    function cancelLetterEditor() {
-      if (letterEditorSaving) {
-        return;
-      }
-
-      $("letter-editor-dialog").close();
-      letterEditorContext = null;
-    }
-
-    $("expand-add-letter").onclick = () => {
-      openLetterEditor("add");
-    };
-
-    $("job-letter").addEventListener("click", () => {
-      openLetterEditor("add");
-    });
-
-    $("job-letter").addEventListener("keydown", event => {
-      if (
-        event.ctrlKey ||
-        event.metaKey ||
-        event.altKey ||
-        event.isComposing
-      ) {
-        return;
-      }
-
-      if (
-        event.key === "Enter" ||
-        event.key.length === 1
-      ) {
-        event.preventDefault();
-        openLetterEditor("add", event.key);
-      }
-    });
-
-    $("open-saved-letter").onclick = () => {
-      openLetterEditor("saved");
-    };
-
-    $("letter-editor-text").addEventListener(
-      "input",
-      updateLetterEditorCount
-    );
-
-    $("letter-editor-close").onclick =
-      cancelLetterEditor;
-
-    $("letter-editor-cancel").onclick =
-      cancelLetterEditor;
-
-    $("letter-editor-dialog").addEventListener(
-      "cancel",
-      event => {
-        if (letterEditorSaving) {
-          event.preventDefault();
-        }
-      }
-    );
-
-    $("letter-editor-dialog").addEventListener(
-      "close",
-      () => {
-        if (!letterEditorSaving) {
-          letterEditorContext = null;
-        }
-      }
-    );
-
-    $("letter-editor-save").onclick = async () => {
-      if (
-        !letterEditorContext ||
-        letterEditorSaving
-      ) {
-        return;
-      }
-
-      const context = {
-        ...letterEditorContext
+    tabButtons.forEach((button, index) => {
+      button.onclick = () => {
+        if (!saving) setTab(button.dataset.tab);
       };
-
-      const text = $("letter-editor-text").value;
-
-      if (context.kind === "add") {
-        $("job-letter").value = text;
-
-        uploadMessage(
-          text.trim()
-            ? `求職信已更新 · ${text.length} 個字元 · 尚未儲存職位`
-            : "目前沒有求職信內容。",
-          text.trim() ? "success" : ""
-        );
-
-        $("letter-editor-dialog").close();
-        letterEditorContext = null;
-
-        syncControls();
-        return;
-      }
-
-      letterEditorSaving = true;
-      busy = true;
-
-      $("letter-editor-text").disabled = true;
-      $("letter-editor-save").disabled = true;
-      $("letter-editor-cancel").disabled = true;
-      $("letter-editor-close").disabled = true;
-
-      $("letter-editor-message").className = "";
-      $("letter-editor-message").textContent =
-        "正在儲存求職信……";
-
-      syncControls();
-
-      let saved = false;
-
-      try {
-        const storedText = text.trim() || null;
-
-        await write(
-          "/jobs/" + context.jobId,
-          "PATCH",
-          { cover_letter: storedText }
-        );
-
-        saved = true;
-
-        const existing = jobs.find(job =>
-          sameId(job.id, context.jobId)
-        ) || detailJob;
-
-        let updated = existing
-          ? {
-              ...existing,
-              cover_letter: storedText
-            }
-          : null;
-
-        try {
-          updated = await fetchSavedJob(context.jobId);
-        } catch (_) {}
-
-        if (updated) {
-          replaceLocalJob(updated);
-        }
-
-        detailMessage(
-          "Cover Letter 已儲存。",
-          "success"
-        );
-
-        $("letter-editor-dialog").close();
-        letterEditorContext = null;
-      } catch (error) {
-        $("letter-editor-message").className = "error";
-
-        $("letter-editor-message").textContent = saved
-          ? "求職信已儲存，但畫面更新失敗。請關閉後重新整理。"
-          : error.message;
-      } finally {
-        letterEditorSaving = false;
-        busy = false;
-
-        $("letter-editor-text").disabled = false;
-        $("letter-editor-save").disabled = false;
-        $("letter-editor-cancel").disabled = false;
-        $("letter-editor-close").disabled = false;
-
-        syncControls();
-      }
-    };
+      button.onkeydown = event => {
+        if (saving || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        event.preventDefault();
+        const direction = event.key === "ArrowRight" ? 1 : -1;
+        const next = (index + direction + tabButtons.length) % tabButtons.length;
+        setTab(tabButtons[next].dataset.tab, true);
+      };
+    });
 
     function stopImport() {
       clearTimeout(importTimer);
       importVersion++;
-
-      if (importController) {
-        importController.abort();
-      }
-
+      importController?.abort();
       importController = null;
     }
 
-    function stopUpload() {
-      uploadVersion++;
-
-      if (uploadController) {
-        uploadController.abort();
-      }
-
-      uploadController = null;
-      uploading = false;
-    }
-
     function clearSourceFields() {
-      Object.values(editableFields).forEach(id => {
-        $(id).value = "";
-      });
-
-      // Do not reset the user's selected application status.
+      for (const id of Object.values(editableFields)) $(id).value = "";
       importedJob = {};
       importedInput = "";
       canonicalUrl = "";
       editing = false;
-
-      $("preview").hidden = true;
-      $("edit-info").hidden = true;
     }
 
     function updateSourceVisibility() {
-      const available =
-        mode === "manual" ||
-        importState === "ready";
+      const ready = mode !== "manual" && importState === "ready";
+      $("url-field").hidden = mode === "paste";
+      $("paste-box").hidden = mode !== "paste" || ready;
 
-      $("job-editor").hidden =
-        !available || !editing;
-
-      $("preview").hidden =
-        !available ||
-        editing ||
-        mode === "manual";
-
-      $("edit-info").hidden =
-        mode === "manual" ||
-        importState !== "ready";
+      $("job-editor").hidden = mode !== "manual" && !(ready && editing);
+      $("preview").hidden = !ready || editing;
+      $("source-actions").hidden = !ready;
+      $("edit-paste").hidden = mode !== "paste";
 
       $("edit-info").textContent = editing
-        ? "返回職位預覽"
-        : "編輯已讀取資料";
+        ? "返回職位預覽" : "編輯已整理資料";
+
+      $("url-label").textContent = mode === "manual"
+        ? "職位來源連結（選填，不會自動讀取）"
+        : "JobsDB 職位連結 *";
     }
 
     function updatePreview() {
-      $("preview-title").textContent =
-        $("job-title").value || "職位名稱待補填";
-
+      $("preview-title").textContent = $("job-title").value || "職位名稱待補填";
       $("preview-company").textContent =
         $("job-company").value || "公司待補填";
-
       $("preview-location").textContent =
-        "地點：" +
-        ($("job-location").value || "未提供");
-
+        "地點：" + ($("job-location").value || "未提供");
       $("preview-salary").textContent =
-        "薪資：" +
-        ($("job-salary").value || "未提供");
-
+        "薪資：" + ($("job-salary").value || "未提供");
       $("preview-posted").textContent =
-        "刊登日期：" +
-        dateText(importedJob.posted_at);
+        "刊登日期：" + dateText(importedJob.posted_at);
+      $("preview-description").textContent =
+        importedJob.description || "尚未提供完整描述。";
     }
 
     function setMode(nextMode) {
-      if (saving) {
-        return;
-      }
-
+      if (saving) return;
       stopImport();
+
+      const previous = mode;
       mode = nextMode;
-
-      $("mode-link").setAttribute(
-        "aria-pressed",
-        String(mode === "link")
-      );
-
-      $("mode-manual").setAttribute(
-        "aria-pressed",
-        String(mode === "manual")
-      );
-
-      $("url-label").textContent = mode === "link"
-        ? "職位連結 *"
-        : "職位連結（選填）";
-
-      $("form-error").hidden = true;
-
-      if (mode === "manual") {
-        importState = "idle";
-        editing = true;
-
-        sourceMessage(
-          "手動輸入：職位名稱和公司必填，其他欄位選填。"
-        );
-
-        updateSourceVisibility();
-        syncControls();
-      } else {
-        scheduleImport();
-      }
-    }
-
-    function scheduleImport() {
-      if (saving) {
-        return;
-      }
-
-      stopImport();
-      clearSourceFields();
-
       importState = "idle";
       $("form-error").hidden = true;
 
+      if (mode !== "manual") clearSourceFields();
+      if (mode === "paste" && previous !== "paste") $("job-url").value = "";
+
+      for (const key of ["link", "paste", "manual"]) {
+        $("mode-" + key).setAttribute("aria-pressed", String(mode === key));
+      }
+
+      if (mode === "manual") {
+        editing = true;
+        sourceMessage("職位名稱和公司必填，其他資料選填。");
+      } else if (mode === "paste") {
+        sourceMessage("貼上整頁或單一職位內容，再按「整理職位資料」。");
+      } else {
+        sourceMessage("貼上 JobsDB 單一職位連結，自動嘗試讀取。");
+      }
+
+      updateSourceVisibility();
+      syncControls();
+
+      if (mode === "link" && sourceInput()) scheduleImport();
+    }
+
+    function scheduleImport() {
+      if (saving || mode !== "link") return;
+      stopImport();
+      clearSourceFields();
+      importState = "idle";
+      $("form-error").hidden = true;
       updateSourceVisibility();
 
-      const input = $("job-url").value.trim();
-
+      const input = sourceInput();
       if (!input) {
-        sourceMessage(
-          "貼上單一職位連結，自動嘗試讀取。"
-        );
-
+        sourceMessage("貼上 JobsDB 單一職位連結，自動嘗試讀取。");
         syncControls();
         return;
       }
 
-      importState = "waiting";
+      try {
+        const url = new URL(input.includes("://") ? input : "https://" + input);
+        if (
+          url.hostname === "indeed.com" ||
+          url.hostname.endsWith(".indeed.com")
+        ) {
+          importState = "error";
+          sourceMessage(
+            "Indeed 請改用「貼上職位文字」，複製整頁或目標職位內容後整理。",
+            "error"
+          );
+          syncControls();
+          return;
+        }
+      } catch (_) {}
 
+      importState = "waiting";
       sourceMessage("準備讀取……");
       syncControls();
 
       const version = importVersion;
-
-      importTimer = setTimeout(() => {
-        readImport(input, version);
-      }, 650);
+      importTimer = setTimeout(() => runImport("link", input, version), 650);
     }
 
-    async function readImport(input, version) {
-      if (
-        version !== importVersion ||
-        mode !== "link" ||
-        !$("add-dialog").open
-      ) {
-        return;
-      }
+    async function runImport(sourceMode, input, version) {
+    if (
+  version !== importVersion ||
+  (sourceMode !== "paste" && mode !== sourceMode) ||
+  !$("add-dialog").open
+) return;
 
       const controller = new AbortController();
       importController = controller;
-
       let timedOut = false;
 
       const timeout = setTimeout(() => {
@@ -3588,391 +2113,444 @@
       }, 25000);
 
       importState = "loading";
-
-      sourceMessage("正在讀取職位資料……");
+      $("form-error").hidden = true;
+      sourceMessage(sourceMode === "paste"
+        ? "正在整理貼上的職位文字……" : "正在讀取職位資料……");
       syncControls();
 
       try {
-        const result = await api("/imports/preview", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ url: input }),
-          signal: controller.signal
-        });
+        const result = await api(
+          sourceMode === "paste" ? "/imports/paste" : "/imports/preview",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              sourceMode === "paste" ? { text: input } : { url: input }
+            ),
+            signal: controller.signal
+          }
+        );
 
         if (
-          version !== importVersion ||
-          mode !== "link" ||
-          !$("add-dialog").open
-        ) {
-          return;
-        }
+  version !== importVersion ||
+  (sourceMode !== "paste" && mode !== sourceMode) ||
+  !$("add-dialog").open
+) return;
 
-        if (
-          !result?.job ||
-          !["ready", "partial"].includes(result.result)
-        ) {
-          throw new Error("預覽格式不正確。");
+        if (!result?.job || !["ready", "partial"].includes(result.result)) {
+          throw new Error("預覽回應格式不正確。");
         }
 
         importedJob = result.job;
-        canonicalUrl = result.job.url || input;
         importedInput = input;
+        canonicalUrl = sourceMode === "link" ? result.job.url || input : "";
 
         for (const [key, id] of Object.entries(editableFields)) {
-          $(id).value =
-            typeof result.job[key] === "string"
-              ? result.job[key]
-              : "";
+          $(id).value = typeof result.job[key] === "string" ? result.job[key] : "";
         }
 
         importState = "ready";
-
         const missing = [];
-
-        if (!$("job-title").value.trim()) {
-          missing.push("職位名稱");
-        }
-
-        if (!$("job-company").value.trim()) {
-          missing.push("公司");
-        }
-
+        if (!$("job-title").value.trim()) missing.push("職位名稱");
+        if (!$("job-company").value.trim()) missing.push("公司");
         editing = missing.length > 0;
 
         sourceMessage(
           missing.length
-            ? "已讀取部分資料，請補上：" +
-              missing.join("、")
-            : "職位資料已讀取，可加入備註或求職信，也可直接儲存。",
+            ? "已整理部分內容，請補上：" + missing.join("、")
+            : sourceMode === "paste"
+              ? "已整理主職位，請核對職位、公司及薪資後再儲存。"
+              : "職位資料已讀取，可加入備註或求職信後儲存。",
           missing.length ? "" : "success"
         );
 
         updatePreview();
         updateSourceVisibility();
-        syncControls();
       } catch (error) {
         if (
-          version !== importVersion ||
-          mode !== "link" ||
-          !$("add-dialog").open
-        ) {
-          return;
-        }
+  version !== importVersion ||
+  (sourceMode !== "paste" && mode !== sourceMode) ||
+  !$("add-dialog").open
+) return;
 
         importState = "error";
-
         sourceMessage(
-          "未能讀取職位，請重新讀取或使用手動輸入。",
+          sourceMode === "paste"
+            ? "未能可靠整理，請調整貼上的內容或手動輸入。"
+            : "未能讀取職位，可改用貼上文字或手動輸入。",
           "error"
         );
-
-        showFormError(
-          timedOut
-            ? "來源讀取逾時。"
-            : error.message
-        );
-
-        syncControls();
+        showFormError(timedOut ? "處理逾時，請再試一次。" : error.message);
+        updateSourceVisibility();
       } finally {
         clearTimeout(timeout);
-
-        if (importController === controller) {
-          importController = null;
-        }
+        if (importController === controller) importController = null;
+        if (version === importVersion) syncControls();
       }
+    }
+
+    $("mode-link").onclick = () => setMode("link");
+    $("mode-paste").onclick = () => setMode("paste");
+    $("mode-manual").onclick = () => setMode("manual");
+
+    $("job-url").oninput = () => {
+      if (mode === "link") scheduleImport();
+      else syncControls();
+    };
+
+    $("paste-text").oninput = () => {
+      if (mode !== "paste") return;
+      stopImport();
+      clearSourceFields();
+      importState = "idle";
+      $("form-error").hidden = true;
+      sourceMessage("文字已更新，按「整理職位資料」重新整理。");
+      updateSourceVisibility();
+      syncControls();
+    };
+
+    $("parse-paste").onclick = () => {
+  if (saving) return;
+
+  const input = $("paste-text").value.trim();
+  if (!input) {
+    sourceMessage("請先貼上職業頁面文字。", "error");
+    return;
+  }
+
+  stopImport();
+  runImport("paste", input, importVersion);
+};
+
+    $("edit-paste").onclick = () => {
+      stopImport();
+      clearSourceFields();
+      importState = "idle";
+      $("form-error").hidden = true;
+      sourceMessage("修改文字後，重新按「整理職位資料」。");
+      updateSourceVisibility();
+      syncControls();
+      $("paste-text").focus();
+    };
+
+    $("edit-info").onclick = () => {
+      editing = !editing;
+      if (!$("job-title").value.trim() || !$("job-company").value.trim()) {
+        editing = true;
+      }
+      updateSourceVisibility();
+    };
+
+    for (const id of Object.values(editableFields)) {
+      $(id).oninput = () => {
+        updatePreview();
+        syncControls();
+      };
+    }
+
+    $("retry").onclick = scheduleImport;
+
+    function stopUpload() {
+      uploadVersion++;
+      uploadController?.abort();
+      uploadController = null;
+      uploading = false;
     }
 
     async function handleLetterFile(file) {
       if (
-        !file ||
-        saving ||
-        busy ||
-        !$("add-dialog").open ||
+        !file || saving || busy || !$("add-dialog").open ||
         $("letter-editor-dialog").open
-      ) {
-        return;
-      }
+      ) return;
 
       setTab("letter");
       stopUpload();
 
-      const filename = file.name || "";
-
-      const extension = filename
-        .split(".")
-        .pop()
-        ?.toLowerCase();
+      const name = file.name || "";
+      const extension = name.split(".").pop()?.toLowerCase();
 
       if (!["docx", "pdf"].includes(extension)) {
-        uploadMessage(
-          "只接受 DOCX 或 PDF。原有求職信保持不變。",
-          "error"
-        );
-
+        uploadMessage("只接受 DOCX 或 PDF，原有內容保持不變。", "error");
         syncControls();
         return;
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        uploadMessage(
-          "檔案不可超過 5 MB。原有求職信保持不變。",
-          "error"
-        );
-
-        syncControls();
-        return;
-      }
-
-      if (!file.size) {
-        uploadMessage(
-          "檔案是空的，請選擇其他檔案。",
-          "error"
-        );
-
+      if (!file.size || file.size > 5 * 1024 * 1024) {
+        uploadMessage("檔案須大於 0 且不超過 5 MB。", "error");
         syncControls();
         return;
       }
 
       const version = uploadVersion;
       const controller = new AbortController();
-
       uploadController = controller;
       uploading = true;
-
-      uploadMessage(
-        "正在讀取 " + filename + "……",
-        "loading"
-      );
-
+      uploadMessage("正在讀取 " + name + "……", "loading");
       syncControls();
 
-      const timeout = setTimeout(() => {
-        controller.abort();
-      }, 25000);
+      const timeout = setTimeout(() => controller.abort(), 25000);
 
       try {
         const form = new FormData();
         form.append("file", file);
 
-        const result = await api(
-          "/jobs/cover-letter/extract",
-          {
-            method: "POST",
-            body: form,
-            signal: controller.signal
-          }
-        );
+        const result = await api("/jobs/cover-letter/extract", {
+          method: "POST",
+          body: form,
+          signal: controller.signal
+        });
 
-        if (
-          version !== uploadVersion ||
-          !$("add-dialog").open
-        ) {
-          return;
-        }
-
-        if (
-          typeof result?.text !== "string" ||
-          !result.text.trim()
-        ) {
+        if (version !== uploadVersion || !$("add-dialog").open) return;
+        if (typeof result?.text !== "string" || !result.text.trim()) {
           throw new Error("未能取得求職信文字。");
         }
-
         if (result.text.length > 60000) {
-          throw new Error(
-            "求職信不可超過 60,000 字元。"
-          );
+          throw new Error("求職信不可超過 60,000 字元。");
         }
 
         $("job-letter").value = result.text;
-
         uploadMessage(
-          `✓ 已匯入 ${filename} · ` +
-          `${result.text.length.toLocaleString()} 字元 · 尚未儲存職位`,
+          `✓ 已匯入 ${name} · ${result.text.length.toLocaleString()} 字元 · 尚未儲存職位`,
           "success"
         );
       } catch (error) {
-        if (
-          version !== uploadVersion ||
-          !$("add-dialog").open
-        ) {
-          return;
-        }
-
+        if (version !== uploadVersion || !$("add-dialog").open) return;
         uploadMessage(
           error.name === "AbortError"
-            ? "讀取逾時。原有內容保持不變，可重選檔案或直接編輯。"
+            ? "讀取逾時，原有內容保持不變。"
             : error.message + " 原有內容保持不變。",
           "error"
         );
       } finally {
         clearTimeout(timeout);
-
         if (version === uploadVersion) {
           uploading = false;
           uploadController = null;
-
           syncControls();
         }
       }
     }
 
     function chooseLetterFile() {
-      if (saving || uploading || busy) {
-        return;
-      }
-
+      if (saving || uploading || busy) return;
       $("letter-file").value = "";
       $("letter-file").click();
     }
 
     $("drop-zone").onclick = chooseLetterFile;
-
-    $("drop-zone").addEventListener("keydown", event => {
-      if (
-        event.key === "Enter" ||
-        event.key === " "
-      ) {
+    $("drop-zone").onkeydown = event => {
+      if (["Enter", " "].includes(event.key)) {
         event.preventDefault();
         chooseLetterFile();
       }
-    });
+    };
 
     $("letter-file").onchange = () => {
       const file = $("letter-file").files[0];
-
-      if (file) {
-        handleLetterFile(file);
-      }
+      if (file) handleLetterFile(file);
     };
 
     function containsFiles(event) {
-      return [...(event.dataTransfer?.types || [])]
-        .includes("Files");
+      return [...(event.dataTransfer?.types || [])].includes("Files");
     }
 
     $("add-dialog").addEventListener("dragenter", event => {
-      if (!containsFiles(event)) {
-        return;
-      }
-
+      if (!containsFiles(event)) return;
       event.preventDefault();
       dragDepth++;
-
-      if (!saving && !busy) {
-        $("add-dialog").classList.add("drag-active");
-      }
+      if (!saving && !busy) $("add-dialog").classList.add("drag-active");
     });
 
     $("add-dialog").addEventListener("dragover", event => {
-      if (!containsFiles(event)) {
-        return;
-      }
-
+      if (!containsFiles(event)) return;
       event.preventDefault();
-
       if (event.dataTransfer) {
-        event.dataTransfer.dropEffect =
-          saving || busy ? "none" : "copy";
+        event.dataTransfer.dropEffect = saving || busy ? "none" : "copy";
       }
     });
 
     $("add-dialog").addEventListener("dragleave", event => {
-      if (!containsFiles(event)) {
-        return;
-      }
-
+      if (!containsFiles(event)) return;
       event.preventDefault();
-
       dragDepth = Math.max(0, dragDepth - 1);
-
-      if (!dragDepth) {
-        $("add-dialog").classList.remove("drag-active");
-      }
+      if (!dragDepth) $("add-dialog").classList.remove("drag-active");
     });
 
     $("add-dialog").addEventListener("drop", event => {
-      if (!containsFiles(event)) {
-        return;
-      }
-
+      if (!containsFiles(event)) return;
       event.preventDefault();
       event.stopPropagation();
-
       dragDepth = 0;
       $("add-dialog").classList.remove("drag-active");
+      if (saving || busy) return;
 
-      if (saving || busy) {
-        return;
-      }
-
-      const droppedFiles = [
-        ...(event.dataTransfer?.files || [])
-      ];
-
-      if (droppedFiles.length !== 1) {
+      const files = [...(event.dataTransfer?.files || [])];
+      if (files.length !== 1) {
         setTab("letter");
-
-        uploadMessage(
-          "請一次拖入一個 DOCX 或 PDF 檔案。",
-          "error"
-        );
-
+        uploadMessage("請一次拖入一個 DOCX 或 PDF。", "error");
         return;
       }
-
-      handleLetterFile(droppedFiles[0]);
+      handleLetterFile(files[0]);
     });
 
-    $("add-job").onclick = () => {
-      if (busy) {
+    function updateLetterCount() {
+      if (letterEditorSaving) return;
+      $("letter-editor-message").className = "";
+      $("letter-editor-message").textContent =
+        `${$("letter-editor-text").value.length.toLocaleString()} / 60,000 字元`;
+    }
+
+    function openLetterEditor(kind, initialKey = "") {
+      if (
+        busy || saving || uploading || $("letter-editor-dialog").open ||
+        (kind === "saved" && !detailJob)
+      ) return;
+
+      letterEditorContext = kind === "add"
+        ? { kind: "add" } : { kind: "saved", jobId: detailJob.id };
+
+      $("letter-editor-text").value = kind === "add"
+        ? $("job-letter").value : detailJob.cover_letter || "";
+
+      $("letter-editor-title").textContent = kind === "add"
+        ? "編輯 Cover Letter" : "Cover Letter · " + detailJob.title;
+
+      $("letter-editor-subtitle").textContent = kind === "add"
+        ? "完成後返回新增視窗，儲存職位時一起保存。"
+        : "修改後按「儲存求職信」。";
+
+      $("letter-editor-save").textContent = kind === "add"
+        ? "完成編輯" : "儲存求職信";
+
+      updateAvailableHeight();
+      $("letter-editor-dialog").showModal();
+
+      requestAnimationFrame(() => {
+        const editor = $("letter-editor-text");
+        editor.focus();
+
+        if (initialKey) {
+          editor.value = (
+            editor.value + (initialKey === "Enter" ? "\n" : initialKey)
+          ).slice(0, 60000);
+          editor.setSelectionRange(editor.value.length, editor.value.length);
+          editor.scrollTop = editor.scrollHeight;
+        } else {
+          editor.setSelectionRange(0, 0);
+          editor.scrollTop = 0;
+        }
+
+        updateLetterCount();
+      });
+    }
+
+    function cancelLetterEditor() {
+      if (letterEditorSaving) return;
+      $("letter-editor-dialog").close();
+      letterEditorContext = null;
+    }
+
+    $("expand-add-letter").onclick = () => openLetterEditor("add");
+    $("job-letter").onclick = () => openLetterEditor("add");
+
+    $("job-letter").onkeydown = event => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
+      if (event.key === "Enter" || event.key.length === 1) {
+        event.preventDefault();
+        openLetterEditor("add", event.key);
+      }
+    };
+
+    $("open-saved-letter").onclick = () => openLetterEditor("saved");
+    $("letter-editor-text").oninput = updateLetterCount;
+    $("letter-editor-close").onclick = cancelLetterEditor;
+    $("letter-editor-cancel").onclick = cancelLetterEditor;
+
+    $("letter-editor-dialog").addEventListener("cancel", event => {
+      if (letterEditorSaving) event.preventDefault();
+    });
+
+    $("letter-editor-dialog").addEventListener("close", () => {
+      if (!letterEditorSaving) letterEditorContext = null;
+    });
+
+    $("letter-editor-save").onclick = async () => {
+      if (!letterEditorContext || letterEditorSaving) return;
+      const context = { ...letterEditorContext };
+      const text = $("letter-editor-text").value;
+
+      if (context.kind === "add") {
+        $("job-letter").value = text;
+        uploadMessage(
+          text.trim()
+            ? `求職信已更新 · ${text.length} 字元 · 尚未儲存職位`
+            : "目前沒有求職信內容。",
+          text.trim() ? "success" : ""
+        );
+        $("letter-editor-dialog").close();
+        letterEditorContext = null;
         return;
       }
 
+      const job = jobs.find(item => sameId(item.id, context.jobId)) || detailJob;
+      if (!job) return;
+
+      letterEditorSaving = true;
+      busy = true;
+      for (const id of [
+        "letter-editor-text", "letter-editor-save",
+        "letter-editor-cancel", "letter-editor-close"
+      ]) $(id).disabled = true;
+
+      $("letter-editor-message").className = "";
+      $("letter-editor-message").textContent = "正在儲存……";
+      syncControls();
+
+      try {
+        await persistPatch(job, { cover_letter: text.trim() || null });
+        detailMessage("Cover Letter 已儲存。", "success");
+        $("letter-editor-dialog").close();
+        letterEditorContext = null;
+      } catch (error) {
+        $("letter-editor-message").className = "error";
+        $("letter-editor-message").textContent = error.message;
+      } finally {
+        letterEditorSaving = false;
+        busy = false;
+        for (const id of [
+          "letter-editor-text", "letter-editor-save",
+          "letter-editor-cancel", "letter-editor-close"
+        ]) $(id).disabled = false;
+        syncControls();
+      }
+    };
+
+    $("add-job").onclick = () => {
+      if (busy) return;
       stopImport();
       stopUpload();
-
       $("add-form").reset();
-
-      // Default only when opening a fresh Add Job form.
       $("job-status").value = "applied";
-
       clearSourceFields();
-
       applicationDateEdited = false;
       $("job-date").value = hongKongToday();
-
       $("date-help").textContent =
         "未修改時使用儲存當天的香港日期，可自行修改。";
-
-      uploadMessage(
-        "尚未匯入，可直接點文字框編輯。"
-      );
-
       $("form-error").hidden = true;
-
+      uploadMessage("尚未匯入，可直接點文字框編輯。");
       dragDepth = 0;
       $("add-dialog").classList.remove("drag-active");
-
       setTab("job");
-
       $("add-dialog").showModal();
       updateAvailableHeight();
-
       setMode("link");
       $("job-url").focus();
     };
 
     function closeAdd() {
-      if (saving) {
-        return;
-      }
-
+      if (saving) return;
       stopImport();
       stopUpload();
-
       $("add-dialog").close();
     }
 
@@ -3980,9 +2558,8 @@
     $("cancel-add").onclick = closeAdd;
 
     $("add-dialog").addEventListener("cancel", event => {
-      if (saving) {
-        event.preventDefault();
-      } else {
+      if (saving) event.preventDefault();
+      else {
         stopImport();
         stopUpload();
       }
@@ -3991,276 +2568,127 @@
     $("add-dialog").addEventListener("close", () => {
       stopImport();
       stopUpload();
-
       importState = "idle";
       dragDepth = 0;
-
       $("add-dialog").classList.remove("drag-active");
-
       syncControls();
     });
 
     $("job-date").oninput = () => {
       applicationDateEdited = true;
-
-      $("date-help").textContent =
-        $("job-date").value
-          ? "會使用你選擇的日期，儲存後仍可修改。"
-          : "留空時使用儲存當天的香港日期。";
+      $("date-help").textContent = $("job-date").value
+        ? "會使用你選擇的日期，儲存後仍可修改。"
+        : "留空時使用儲存當天的香港日期。";
     };
 
-    $("job-url").oninput = () => {
-      if (mode === "link") {
-        scheduleImport();
-      } else {
-        syncControls();
-      }
-    };
+    function setSaving(value) {
+      saving = value;
+      $("add-fields").disabled = value;
+      $("job-date").disabled = value;
+      $("cancel-add").disabled = value;
+      $("close-add").disabled = value;
+      tabButtons.forEach(button => { button.disabled = value; });
+      $("save-job").textContent = value ? "正在儲存……" : "確認並儲存";
+      syncControls();
+    }
 
-    Object.values(editableFields).forEach(id => {
-      $(id).addEventListener("input", () => {
-        updatePreview();
-        syncControls();
-      });
-    });
-
-    $("mode-link").onclick = () => {
-      if (mode !== "link") {
-        setMode("link");
-      }
-    };
-
-    $("mode-manual").onclick = () => {
-      if (mode !== "manual") {
-        setMode("manual");
-      }
-    };
-
-    $("edit-info").onclick = () => {
-      editing = !editing;
-
-      if (
-        !$("job-title").value.trim() ||
-        !$("job-company").value.trim()
-      ) {
-        editing = true;
-      }
-
-      updateSourceVisibility();
-    };
-
-    $("retry").onclick = () => {
-      if (
-        !busy &&
-        !saving &&
-        mode === "link"
-      ) {
-        scheduleImport();
-      }
-    };
-
-    $("add-form").addEventListener("submit", async event => {
+    $("add-form").onsubmit = async event => {
       event.preventDefault();
+      if (busy || saving || uploading) return;
 
-      if (busy || saving || uploading) {
-        return;
-      }
-
-      if (
-        mode === "link" &&
-        (
-          importState !== "ready" ||
-          importedInput !== $("job-url").value.trim()
-        )
-      ) {
+      if (!sourceReady()) {
         setTab("job");
-
-        showFormError(
-          "請先完成讀取，或切換為手動輸入。"
-        );
-
+        showFormError("請先完成讀取或整理，亦可切換為手動輸入。");
         return;
       }
 
       const payload = {};
-
       for (const key of sourceDetailKeys) {
         payload[key] = importedJob[key] || null;
       }
-
       for (const [key, id] of Object.entries(editableFields)) {
         payload[key] = $(id).value.trim() || null;
       }
 
       if (!payload.title || !payload.company) {
         editing = true;
-
         setTab("job");
         updateSourceVisibility();
-
-        showFormError(
-          "請填寫職位名稱及公司。"
-        );
-
+        showFormError("請填寫職位名稱及公司。");
         return;
       }
 
       payload.url = mode === "link"
         ? canonicalUrl
-        : $("job-url").value.trim() || null;
+        : mode === "manual" ? $("job-url").value.trim() || null : null;
 
-      // Read the footer status before disabling controls.
       payload.status = $("job-status").value;
-
-      payload.notes =
-        $("job-notes").value.trim() || null;
-
-      payload.cover_letter =
-        $("job-letter").value.trim() || null;
-
+      payload.notes = $("job-notes").value.trim() || null;
+      payload.cover_letter = $("job-letter").value.trim() || null;
       payload.applied_at = applicationDateEdited
-        ? $("job-date").value || null
-        : null;
+        ? $("job-date").value || null : null;
 
       busy = true;
-      saving = true;
-
-      syncControls();
-
-      $("add-fields").disabled = true;
-      $("job-date").disabled = true;
-      $("cancel-add").disabled = true;
-      $("close-add").disabled = true;
-
-      tabButtons.forEach(button => {
-        button.disabled = true;
-      });
-
-      $("save-job").textContent = "正在儲存……";
+      setSaving(true);
       $("form-error").hidden = true;
-
       let saved = false;
 
       try {
-        await write(
-          "/jobs",
-          "POST",
-          payload
-        );
-
+        await write("/jobs", "POST", payload);
         saved = true;
-
         $("add-dialog").close();
-
         $("search").value = "";
         $("filter").value = "";
-
         toast(
-          "success",
-          "職位已儲存",
-          `已加入「${payload.title}」— ${payload.company}。\n` +
-          `狀態：${statusLabel(payload.status)}`
+          "success", "職位已儲存",
+          `「${payload.title}」— ${payload.company} · ${statusLabel(payload.status)}`
         );
       } catch (error) {
-        showFormError(
-          error.status === 409
-            ? "這個連結已儲存，不需重複新增。"
-            : error.message
-        );
+        showFormError(error.status === 409
+          ? "這個連結已儲存，不需重複新增。" : error.message);
       } finally {
         busy = false;
-        saving = false;
-
-        $("add-fields").disabled = false;
-        $("job-date").disabled = false;
-        $("cancel-add").disabled = false;
-        $("close-add").disabled = false;
-
-        tabButtons.forEach(button => {
-          button.disabled = false;
-        });
-
-        $("save-job").textContent = "確認並儲存";
-
-        syncControls();
+        setSaving(false);
       }
 
       if (saved) {
         await loadJobs();
         $("add-job").focus();
       }
-    });
-
-    $("cancel-delete").onclick = () => {
-      if (!busy) {
-        $("delete-dialog").close();
-      }
     };
 
-    $("delete-dialog").addEventListener(
-      "cancel",
-      event => {
-        if (busy) {
-          event.preventDefault();
-        }
-      }
-    );
+    $("cancel-delete").onclick = () => {
+      if (!busy) $("delete-dialog").close();
+    };
+
+    $("delete-dialog").addEventListener("cancel", event => {
+      if (busy) event.preventDefault();
+    });
 
     $("confirm-delete").onclick = async () => {
-      if (busy || !selectedJob) {
-        return;
-      }
-
+      if (busy || !selectedJob) return;
       const job = selectedJob;
-
       busy = true;
       syncControls();
-
       $("confirm-delete").disabled = true;
       $("cancel-delete").disabled = true;
 
       try {
-        await api(
-          "/jobs/" + job.id,
-          { method: "DELETE" }
-        );
-
-        jobs = jobs.filter(item =>
-          !sameId(item.id, job.id)
-        );
-
-        if (
-          detailJob &&
-          sameId(detailJob.id, job.id)
-        ) {
-          detailJob = null;
-        }
-
+        await api("/jobs/" + job.id, { method: "DELETE" });
+        jobs = jobs.filter(item => !sameId(item.id, job.id));
+        if (detailJob && sameId(detailJob.id, job.id)) detailJob = null;
         $("delete-dialog").close();
-
         render();
         $("search").focus();
-
-        toast(
-          "success",
-          "職位已刪除",
-          job.title
-        );
+        toast("success", "職位已刪除", job.title);
       } catch (error) {
         $("delete-dialog").close();
-
-        toast(
-          "error",
-          "未能確認刪除",
-          error.message
-        );
+        toast("error", "未能確認刪除", error.message);
       } finally {
         busy = false;
         selectedJob = null;
-
         $("confirm-delete").disabled = false;
         $("cancel-delete").disabled = false;
-
         syncControls();
       }
     };
@@ -4270,10 +2698,7 @@
     $("refresh").onclick = loadJobs;
 
     syncControls();
-
-    if (page === "jobs") {
-      loadJobs();
-    }
+    if (page === "jobs") loadJobs();
   </script>
 </body>
 </html>

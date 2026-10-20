@@ -1,4 +1,4 @@
-"""Read-only job previews for JobsDB and Indeed."""
+"""Read-only job previews for JobsDB, Indeed and CTgoodjobs pastes."""
 
 from __future__ import annotations
 
@@ -26,9 +26,15 @@ HKT = timezone(timedelta(hours=8))
 MAX_BYTES = 2_000_000
 FETCH_LIMIT = asyncio.Semaphore(3)
 
+MAX_PASTE_CHARS = 200_000
+
 
 class ImportRequest(BaseModel):
     url: str = Field(min_length=1, max_length=8000)
+
+
+class PasteRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=MAX_PASTE_CHARS)
 
 
 class PageParser(HTMLParser):
@@ -214,6 +220,16 @@ def split_sections(description):
         "how to apply": "other",
         "加分條件": "other",
         "福利": "other",
+
+        # CTgoodjobs page metadata: stop the current section.
+        "技能": "other",
+        "更多資料": "other",
+        "工種": "other",
+        "工作地點": "other",
+        "待遇": "other",
+        "職場攻略": "other",
+        "分享這份工作": "other",
+        "公司概覽": "other",
     }
 
     parts = {
@@ -237,7 +253,6 @@ def split_sections(description):
         for key, value in parts.items()
     }
 
-
 def extract_sections_from_html(html_content):
     description = clean_description(html_content)
     sections = split_sections(description)
@@ -246,6 +261,387 @@ def extract_sections_from_html(html_content):
         sections["responsibilities"],
         sections["requirements"],
     )
+
+
+PASTE_SALARY_LINE = re.compile(
+    r"(?:HK\s*\$|HKD|\$|月薪|每月)\s*\d",
+    re.I,
+)
+
+
+def normalize_paste(value):
+    value = value.replace("\r\n", "\n").replace("\r", "\n")
+    value = value.replace("\u00a0", " ")
+
+    lines = [
+        " ".join(line.split())
+        for line in value.splitlines()
+    ]
+
+    return [line for line in lines if line]
+
+
+def find_main_job(lines):
+    """Locate the opened job using Indeed, JobsDB or CTgoodjobs markers."""
+
+    # Indeed: opened job has an apply button and full description marker.
+    detail_index = None
+
+    for index, line in enumerate(lines):
+        if line.lower() in {
+            "完整職位描述",
+            "job description",
+            "full job description",
+        }:
+            detail_index = index
+            break
+
+    if detail_index is not None:
+        apply_index = None
+
+        for index in range(detail_index - 1, -1, -1):
+            if lines[index].startswith("立即申請"):
+                apply_index = index
+                break
+
+        if apply_index is not None:
+            header_start = max(0, apply_index - 15)
+            body_end = len(lines)
+
+            for index in range(detail_index + 1, len(lines)):
+                if lines[index].startswith("舉報職位"):
+                    body_end = index
+                    break
+
+            return {
+                "site": "Indeed",
+                "header": lines[header_start:apply_index],
+                "body": lines[detail_index + 1:body_end],
+            }
+
+    # JobsDB: the opened job ends at its report link.
+    report_index = None
+
+    for index, line in enumerate(lines):
+        if line.startswith(
+            "Report this job advert"
+        ) or line.startswith("Report this job"):
+            report_index = index
+            break
+
+    if report_index is not None:
+        body_start = None
+
+        for index in range(report_index):
+            if lines[index].lower() in {
+                "key responsibilities",
+                "responsibilities",
+                "requirements",
+                "job responsibilities",
+            }:
+                body_start = index
+                break
+
+        if body_start is not None:
+            return {
+                "site": "JobsDB",
+                "header": lines[:body_start],
+                "body": lines[body_start:report_index],
+            }
+
+    # CTgoodjobs: the opened job is the first job details block.
+    work_index = None
+
+    for index, line in enumerate(lines):
+        if line == "工作內容":
+            work_index = index
+            break
+
+    if work_index is not None:
+        header_start = max(0, work_index - 12)
+        body_end = len(lines)
+
+        for index in range(work_index + 1, len(lines)):
+            if lines[index] == "工作內容":
+                body_end = index
+                break
+
+            if lines[index] == "職場攻略":
+                body_end = index
+                break
+
+            if lines[index] == "技能":
+                body_end = index
+                break
+
+        return {
+            "site": "CTgoodjobs",
+            "header": lines[header_start:work_index],
+            "body": lines[work_index + 1:body_end],
+        }
+
+    return None
+
+
+def is_employment_type(value):
+    return value.strip().lower() in {
+        "全職",
+        "長工",
+        "合約",
+        "兼職",
+        "實習",
+        "長工, 全職",
+        "全職 +1",
+    }
+
+
+def is_salary_line(value):
+    return bool(
+        PASTE_SALARY_LINE.search(value)
+        or value.lower().startswith("pay:")
+    )
+
+
+def is_location_line(value):
+    location_words = (
+        "hong kong", "kowloon", "new territories",
+        "香港", "九龍", "新界",
+    )
+
+    lowered = value.lower()
+
+    return any(word in lowered for word in location_words)
+
+
+def extract_paste_salary(header, body):
+    for line in reversed(header):
+        if is_salary_line(line):
+            return line[:200]
+
+    for line in body[:20]:
+        if is_salary_line(line):
+            return line[:200]
+
+    return None
+
+
+def extract_paste_location(header, body):
+    for line in body[:30]:
+        if line.startswith("來源於"):
+            return line.replace("來源於", "", 1).strip()[:200]
+
+    for line in reversed(header):
+        if is_location_line(line) and not is_salary_line(line):
+            return line[:200]
+
+    return None
+
+
+def extract_paste_title_and_company(header, location):
+    company_index = None
+
+    if location:
+        for index in range(len(header) - 1, -1, -1):
+            if header[index] == location:
+                company_index = index - 1
+                break
+
+    if company_index is None:
+        for index in range(len(header) - 1, -1, -1):
+            line = header[index]
+
+            if is_salary_line(line):
+                continue
+
+            if is_employment_type(line):
+                continue
+
+            if is_location_line(line):
+                continue
+
+            if line in {"-", "—", "·"}:
+                continue
+
+            company_index = index
+            break
+
+    if company_index is None or company_index < 1:
+        return None, None
+
+    company = header[company_index][:200]
+    title = header[company_index - 1][:200]
+
+    if not title or is_salary_line(title) or is_employment_type(title):
+        title = None
+
+    return title, company
+
+
+def extract_jobsdb_paste_title_and_company(header):
+    anchor_index = None
+
+    for index, line in enumerate(header):
+        if line.lower() == "employer site":
+            anchor_index = index
+            break
+
+    if anchor_index is None or anchor_index + 2 >= len(header):
+        return None, None
+
+    title = header[anchor_index + 1][:200]
+    company = header[anchor_index + 2][:200]
+
+    if is_salary_line(title) or is_employment_type(title):
+        title = None
+
+    if is_salary_line(company) or is_employment_type(company):
+        company = None
+
+    return title, company
+
+
+def extract_ct_paste_title_and_company(header):
+    apply_index = None
+
+    for index, line in enumerate(header):
+        if line == "立即申請":
+            apply_index = index
+            break
+
+    if apply_index is None or apply_index < 2:
+        return None, None
+
+    title = header[apply_index - 2][:200]
+    company = header[apply_index - 1][:200]
+
+    if is_salary_line(title) or is_employment_type(title):
+        title = None
+
+    if is_salary_line(company) or is_employment_type(company):
+        company = None
+
+    return title, company
+
+
+def extract_ct_paste_salary(header, body):
+    for line in header + body[:40]:
+        if line.startswith("薪酬"):
+            value = line.replace("薪酬", "", 1).strip()
+
+            if value and value.lower() not in {
+                "n/a",
+                "na",
+                "不適用",
+            }:
+                return value[:200]
+
+            return None
+
+    for line in header + body[:40]:
+        if is_salary_line(line):
+            return line[:200]
+
+    return None
+
+
+def extract_ct_paste_location(body):
+    for index, line in enumerate(body):
+        if line == "工作地點" and index + 1 < len(body):
+            return body[index + 1][:200]
+
+    return None
+
+
+def build_paste_preview(text):
+    lines = normalize_paste(text)
+    main_job = find_main_job(lines)
+
+    if main_job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "未能辨識主要職位。請貼上完整職位內容，"
+                "或只複製正在查看的職位後重試。"
+            ),
+        )
+
+    header = main_job["header"]
+    body = "\n".join(main_job["body"])
+
+    if main_job["site"] == "CTgoodjobs":
+        title, company = extract_ct_paste_title_and_company(
+            header
+        )
+        salary = extract_ct_paste_salary(
+            header,
+            main_job["body"],
+        )
+        location = extract_ct_paste_location(
+            main_job["body"]
+        )
+    else:
+        salary = extract_paste_salary(
+            header,
+            main_job["body"],
+        )
+        location = extract_paste_location(
+            header,
+            main_job["body"],
+        )
+
+        if main_job["site"] == "JobsDB":
+            title, company = (
+                extract_jobsdb_paste_title_and_company(header)
+            )
+        else:
+            title, company = extract_paste_title_and_company(
+                header,
+                location,
+            )
+
+    sections = split_sections(body)
+
+    job = {
+        "title": title,
+        "company": company,
+        "url": None,
+        "location": location,
+        "salary": salary,
+        "source": "Pasted text",
+        "status": "saved",
+        "notes": None,
+        "applied_at": None,
+        "posted_at": None,
+        "apply_by": None,
+        "description": body[:60000] or None,
+        "responsibilities": sections["responsibilities"],
+        "requirements": sections["requirements"],
+        "cover_letter": None,
+    }
+
+    missing_required = [
+        key
+        for key in ("title", "company")
+        if not job[key]
+    ]
+
+    return {
+        "result": "partial" if missing_required else "ready",
+        "job": job,
+        "source_job_id": None,
+        "extraction_method": "paste_text",
+        "missing_required": missing_required,
+        "missing_optional": [
+            key
+            for key in ("location", "salary")
+            if not job[key]
+        ],
+        "can_save": not missing_required,
+        "warnings": [
+            "請檢查辨識結果；如欄位留空，請自行補上。"
+        ],
+        "saved": False,
+    }
 
 
 def supported_target(raw_url):
@@ -801,3 +1197,8 @@ async def preview_job(request: ImportRequest):
         source,
         expected_id,
     )
+
+
+@router.post("/paste")
+async def preview_pasted_job(request: PasteRequest):
+    return build_paste_preview(request.text)
