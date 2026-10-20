@@ -1,1 +1,31 @@
-see-local
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobTrail HK — restoring</title>
+<style>
+body{font-family:system-ui;max-width:640px;margin:40px auto;padding:20px;line-height:1.6;color:#233047}
+code{background:#eef2f8;padding:2px 6px;border-radius:4px}
+pre{background:#1c2940;color:#eef2f8;padding:16px;border-radius:12px;overflow:auto}
+a{color:#2855c5}
+</style>
+</head>
+<body>
+<h1>JobTrail HK</h1>
+<p>前端檔案正在修復中。後端 <code>/imports/preview</code> 已恢復可用。</p>
+<p>請在本機執行以下指令還原完整介面：</p>
+<pre>curl -o web/index.html \
+  https://raw.githubusercontent.com/ac0915/jobtrail-hk/ca9093a695997ac32a6b771ac1ee864b0e144134/web/index.html
+
+git add web/index.html
+git commit -m "Restore web/index.html"
+git push origin main</pre>
+<p>貼上文字匯入功能的檔案在本機工作區：</p>
+<ul>
+<li><code>artifacts/app_imports_work.py</code> → <code>app/imports.py</code></li>
+<li><code>artifacts/web_index_work.html</code> → <code>web/index.html</code></li>
+<li><code>artifacts/test_imports_work.py</code> → <code>tests/test_imports.py</code></li>
+</ul>
+</body>
+</html>
