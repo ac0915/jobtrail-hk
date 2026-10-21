@@ -32,9 +32,9 @@ MAX_PASTE_CHARS = 200_000
 class ImportRequest(BaseModel):
     url: str = Field(min_length=1, max_length=8000)
 
-
 class PasteRequest(BaseModel):
     text: str = Field(min_length=1, max_length=MAX_PASTE_CHARS)
+    source_url: str | None = None
 
 
 class PageParser(HTMLParser):
@@ -280,6 +280,94 @@ def normalize_paste(value):
 
     return [line for line in lines if line]
 
+def find_ct_main_job(lines):
+    """Identify the opened CTgoodjobs job, ignoring recommended jobs."""
+    work_indexes = [
+        index
+        for index, line in enumerate(lines)
+        if line == "工作內容"
+    ]
+
+    if not work_indexes:
+        return None
+
+    sticky_title = None
+    sticky_company = None
+
+    for index in range(len(lines) - 2, -1, -1):
+        if (
+            lines[index] == "立即申請"
+            and index + 1 < len(lines)
+            and lines[index + 1] == "儲存好工"
+        ):
+            if index >= 2:
+                sticky_title = lines[index - 2][:200]
+                sticky_company = lines[index - 1][:200]
+
+            break
+
+    def make_result(work_index):
+        body_end = len(lines)
+
+        for index in range(work_index + 1, len(lines)):
+            if lines[index] == "工作內容":
+                body_end = index
+                break
+
+            if lines[index] == "職場攻略":
+                body_end = index
+                break
+
+            if lines[index] == "技能":
+                body_end = index
+                break
+
+        return {
+            "site": "CTgoodjobs",
+            "header": lines[
+                max(0, work_index - 12):work_index
+            ],
+            "body": lines[work_index + 1:body_end],
+        }
+
+    # Prefer the description whose own card matches the bottom card.
+    for work_index in work_indexes:
+        card_title = None
+        card_company = None
+
+        for index in range(
+            work_index - 1,
+            max(-1, work_index - 10),
+            -1,
+        ):
+            if lines[index] == "立即申請":
+                if index >= 2:
+                    card_title = lines[index - 2][:200]
+                    card_company = lines[index - 1][:200]
+
+                break
+
+        if (
+            sticky_title
+            and card_title == sticky_title
+            and card_company == sticky_company
+        ):
+            return make_result(work_index)
+
+    # Otherwise, use the description without a recommended-job card.
+    for work_index in work_indexes:
+        has_card = any(
+            lines[index] == "立即申請"
+            for index in range(
+                max(0, work_index - 10),
+                work_index,
+            )
+        )
+
+        if not has_card:
+            return make_result(work_index)
+
+    return make_result(work_indexes[0])
 
 def find_main_job(lines):
     """Locate the opened job using Indeed, JobsDB or CTgoodjobs markers."""
@@ -349,36 +437,11 @@ def find_main_job(lines):
                 "body": lines[body_start:report_index],
             }
 
-    # CTgoodjobs: the opened job is the first job details block.
-    work_index = None
+        # CTgoodjobs
+    ct_job = find_ct_main_job(lines)
 
-    for index, line in enumerate(lines):
-        if line == "工作內容":
-            work_index = index
-            break
-
-    if work_index is not None:
-        header_start = max(0, work_index - 12)
-        body_end = len(lines)
-
-        for index in range(work_index + 1, len(lines)):
-            if lines[index] == "工作內容":
-                body_end = index
-                break
-
-            if lines[index] == "職場攻略":
-                body_end = index
-                break
-
-            if lines[index] == "技能":
-                body_end = index
-                break
-
-        return {
-            "site": "CTgoodjobs",
-            "header": lines[header_start:work_index],
-            "body": lines[work_index + 1:body_end],
-        }
+    if ct_job is not None:
+        return ct_job
 
     return None
 
@@ -501,6 +564,7 @@ def extract_jobsdb_paste_title_and_company(header):
 
 
 def extract_ct_paste_title_and_company(header):
+    """Extract CTgoodjobs title/company from either card format."""
     apply_index = None
 
     for index, line in enumerate(header):
@@ -508,17 +572,34 @@ def extract_ct_paste_title_and_company(header):
             apply_index = index
             break
 
-    if apply_index is None or apply_index < 2:
-        return None, None
+    if apply_index is not None and apply_index >= 2:
+        # Format A:
+        # Title
+        # Company
+        # 立即申請
+        title = header[apply_index - 2][:200]
+        company = header[apply_index - 1][:200]
 
-    title = header[apply_index - 2][:200]
-    company = header[apply_index - 1][:200]
+    elif len(header) >= 2:
+        # Format B:
+        # Company
+        # Title
+        # Company
+        # 工作內容
+        title = header[-2][:200]
+        company = header[-1][:200]
+
+    else:
+        return None, None
 
     if is_salary_line(title) or is_employment_type(title):
         title = None
 
     if is_salary_line(company) or is_employment_type(company):
         company = None
+
+    if title == company:
+        title = None
 
     return title, company
 
@@ -552,7 +633,7 @@ def extract_ct_paste_location(body):
     return None
 
 
-def build_paste_preview(text):
+def build_paste_preview(text, source_url=None):
     lines = normalize_paste(text)
     main_job = find_main_job(lines)
 
@@ -604,10 +685,10 @@ def build_paste_preview(text):
     job = {
         "title": title,
         "company": company,
-        "url": None,
+          "url": source_url,
         "location": location,
         "salary": salary,
-        "source": "Pasted text",
+         "source": main_job["site"],
         "status": "saved",
         "notes": None,
         "applied_at": None,
@@ -1201,4 +1282,7 @@ async def preview_job(request: ImportRequest):
 
 @router.post("/paste")
 async def preview_pasted_job(request: PasteRequest):
-    return build_paste_preview(request.text)
+    return build_paste_preview(
+        request.text,
+        request.source_url,
+    )
