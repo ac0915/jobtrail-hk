@@ -42,9 +42,9 @@ def setup():
     email = input('Owner email: ').strip().lower()
     if '@' not in email or any(c in email for c in "\r\n'\""):
         raise SystemExit('Invalid email.')
-    password = getpass('Password (15-256 characters): ')
-    if not 15 <= len(password) <= 256:
-        raise SystemExit('Use 15-256 characters.')
+    password = getpass('Password (8-20 characters): ')
+    if not 8 <= len(password) <= 20:
+        raise SystemExit('Use 8-20 characters.')
     if password != getpass('Confirm password: '):
         raise SystemExit('Passwords do not match.')
     values = {'OWNER_EMAIL': email, 'OWNER_PASSWORD_HASH': hash_password(password)}
