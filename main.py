@@ -20,6 +20,8 @@ from app.jobs import MULTI_USER_ENABLED, router as jobs_router
 BASE_DIR = Path(__file__).resolve().parent
 WEB_FILE = BASE_DIR / "web" / "index.html"
 VERIFY_EMAIL_FILE = BASE_DIR / "web" / "verify-email.html"
+FORGOT_PASSWORD_FILE = BASE_DIR / "web" / "forgot-password.html"
+RESET_PASSWORD_FILE = BASE_DIR / "web" / "reset-password.html"
 
 
 @asynccontextmanager
@@ -89,15 +91,15 @@ def website_response() -> FileResponse:
     )
 
 
-def verify_email_response() -> FileResponse:
-    if not VERIFY_EMAIL_FILE.is_file():
+def page_response(path: Path, missing_message: str) -> FileResponse:
+    if not path.is_file():
         raise HTTPException(
             status_code=500,
-            detail="Verification page missing: create web/verify-email.html.",
+            detail=missing_message,
         )
 
     return FileResponse(
-        VERIFY_EMAIL_FILE,
+        path,
         media_type="text/html",
     )
 
@@ -125,7 +127,26 @@ def legacy_my_jobs_page():
 
 @app.get("/verify-email", include_in_schema=False)
 def verify_email_page():
-    return verify_email_response()
+    return page_response(
+        VERIFY_EMAIL_FILE,
+        "Verification page missing: create web/verify-email.html.",
+    )
+
+
+@app.get("/forgot-password", include_in_schema=False)
+def forgot_password_page():
+    return page_response(
+        FORGOT_PASSWORD_FILE,
+        "Forgot-password page missing: create web/forgot-password.html.",
+    )
+
+
+@app.get("/reset-password", include_in_schema=False)
+def reset_password_page():
+    return page_response(
+        RESET_PASSWORD_FILE,
+        "Reset-password page missing: create web/reset-password.html.",
+    )
 
 
 # The old root JSON response is available here.
@@ -137,6 +158,8 @@ def api_info():
         "profile": "/profile",
         "my_jobs": "/profile/my-jobs",
         "verify_email": "/verify-email",
+        "forgot_password": "/forgot-password",
+        "reset_password": "/reset-password",
         "docs": "/docs",
         "test_docs": "/test-docs",
         "jobs": "/jobs",
