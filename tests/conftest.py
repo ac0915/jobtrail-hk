@@ -18,11 +18,11 @@ def local_admin_parameters(value):
         raise ValueError('Invalid test connection settings; credentials omitted.') from None
     if set(params) - ALLOWED_KEYS:
         raise ValueError('Unsupported test connection settings.')
-    if params.get('host') != '127.0.0.1' or params.get('port') != '5432':
+    if params.get('host') != '127.0.0.1' or params.get('port') != 5432:
         raise ValueError('Tests require explicit host=127.0.0.1 port=5432.')
     if params.get('dbname') != 'postgres' or not params.get('user'):
         raise ValueError('Use the local postgres maintenance database and an explicit user.')
-    params.update(sslmode='disable', connect_timeout='5')
+    params.update(sslmode='disable', connect_timeout=5)
     return params
 
 
@@ -47,6 +47,7 @@ def db(database_url):
     with connect(database_url, autocommit=True) as conn:
         conn.execute((ROOT / 'db/schema.sql').read_text(encoding='utf-8'))
         conn.execute((ROOT / 'db/migrations/001_multi_user_expand.sql').read_text(encoding='utf-8'))
+        conn.execute((ROOT / 'db/migrations/003_email_verification.sql').read_text(encoding='utf-8'))
     with connect(database_url) as conn:
         try:
             yield conn

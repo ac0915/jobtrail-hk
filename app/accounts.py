@@ -19,11 +19,7 @@ def normalize_email(value):
 
 
 def create_user(conn, email, password, *, reserved_email):
-    """Reserve the legacy owner address until explicit owner provisioning is complete.
-
-    UniqueViolation is intentionally left to the caller's transaction boundary.
-    This helper does not verify email ownership or grant access to legacy jobs.
-    """
+    """Reserve the legacy owner address until explicit owner provisioning is complete."""
     email = normalize_email(email)
     if email == normalize_email(reserved_email):
         raise ValueError("This address is reserved for the existing owner.")
@@ -65,9 +61,21 @@ def resolve_session(conn, token):
     except ValueError:
         return None
     with conn.cursor() as cur:
-        cur.execute("SELECT u.id, u.email FROM public.jt_sessions s JOIN public.jt_users u ON u.id = s.user_id WHERE s.token_hash = %s AND s.expires_at > NOW() AND u.is_active", (digest,))
+        cur.execute(
+            """
+            SELECT u.id, u.email, u.email_verified_at
+            FROM public.jt_sessions s
+            JOIN public.jt_users u ON u.id = s.user_id
+            WHERE s.token_hash = %s
+              AND s.expires_at > NOW()
+              AND u.is_active
+            """,
+            (digest,),
+        )
         row = cur.fetchone()
-    return {"id": row[0], "email": row[1]} if row else None
+    if not row:
+        return None
+    return {"id": row[0], "email": row[1], "email_verified": row[2] is not None}
 
 
 def revoke_session(conn, token):
