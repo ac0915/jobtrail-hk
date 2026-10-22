@@ -4,17 +4,33 @@ Usage:
   python scripts/provision_owner.py --dry-run
   python scripts/provision_owner.py --apply
 
-Required environment:
-  DATABASE_URL   PostgreSQL connection string for the real database
-  OWNER_EMAIL    Existing owner account email
+Reads DATABASE_URL and OWNER_EMAIL from the project .env file when they are
+not already set in the shell environment.
 """
 from __future__ import annotations
 
 import argparse
 import os
 import sys
+from pathlib import Path
 
 from psycopg import connect
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_env(path: Path) -> None:
+    if not path.is_file():
+        return
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
 
 
 def main() -> int:
@@ -26,14 +42,16 @@ def main() -> int:
     if args.dry_run == args.apply:
         parser.error('Choose exactly one of --dry-run or --apply.')
 
+    load_env(ROOT / '.env')
+
     database_url = os.getenv('DATABASE_URL', '').strip()
     owner_email = os.getenv('OWNER_EMAIL', '').strip().lower()
 
     if not database_url:
-        print('DATABASE_URL is required.', file=sys.stderr)
+        print('DATABASE_URL is required in the environment or .env file.', file=sys.stderr)
         return 2
     if not owner_email:
-        print('OWNER_EMAIL is required.', file=sys.stderr)
+        print('OWNER_EMAIL is required in the environment or .env file.', file=sys.stderr)
         return 2
 
     with connect(database_url) as conn:
