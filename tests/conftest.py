@@ -48,6 +48,7 @@ def db(database_url):
         conn.execute((ROOT / 'db/schema.sql').read_text(encoding='utf-8'))
         conn.execute((ROOT / 'db/migrations/001_multi_user_expand.sql').read_text(encoding='utf-8'))
         conn.execute((ROOT / 'db/migrations/003_email_verification.sql').read_text(encoding='utf-8'))
+        conn.execute((ROOT / 'db/migrations/004_password_reset.sql').read_text(encoding='utf-8'))
     with connect(database_url) as conn:
         try:
             yield conn
