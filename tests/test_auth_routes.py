@@ -107,7 +107,10 @@ def test_logout_requires_csrf_and_clears_cookies(app_and_pool, client):
 
     response = client.post("/auth/logout", headers={CSRF_HEADER: "csrf-token"})
     assert response.status_code == 200
-    assert "jt_session=;" in response.headers["set-cookie"]
+    set_cookie = response.headers["set-cookie"]
+    assert f'{SESSION_COOKIE}=""' in set_cookie
+    assert "Max-Age=0" in set_cookie
+    assert f'{CSRF_COOKIE}=""' in set_cookie
     conn.commit.assert_called_once()
 
 
