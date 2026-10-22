@@ -1,16 +1,18 @@
-"""Job CRUD with editable application dates and cover letters."""
+"""Job CRUD with editable application dates, cover letters, and flagged ownership."""
 
 from __future__ import annotations
 
+import os
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from psycopg import OperationalError
 from psycopg.errors import UniqueViolation
 from psycopg.rows import dict_row
 from pydantic import BaseModel, field_validator
 
+from app.auth_routes import AuthUser, current_user
 from app.cover_letters import router as cover_letters_router
 from app.database import get_pool
 from app.validation import (
@@ -25,6 +27,8 @@ from app.validation import (
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 HKT = timezone(timedelta(hours=8))
+
+MULTI_USER_ENABLED = os.getenv("MULTI_USER_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 APPLIED_STATUSES = {
     "applied",
@@ -52,7 +56,7 @@ JOB_FIELDS = (
 )
 
 JOB_COLUMNS = ", ".join(
-    ("id",) + JOB_FIELDS + ("created_at", "updated_at")
+    ("id",) + JOB_FIELDS + ("user_id", "created_at", "updated_at")
 )
 
 
@@ -132,6 +136,13 @@ def today_hk():
     return datetime.now(HKT).date()
 
 
+def request_user(request: Request) -> Optional[AuthUser]:
+    """Return the signed-in user only when multi-user mode is enabled."""
+    if not MULTI_USER_ENABLED:
+        return None
+    return current_user(request)
+
+
 def prepare_application_update(
     fields,
     existing_applied_at,
@@ -159,7 +170,7 @@ def database_unavailable():
     )
 
 
-def check_duplicate(cur, url, exclude_id=None):
+def check_duplicate(cur, url, exclude_id=None, user_id=None):
     if not url:
         return
 
@@ -170,6 +181,10 @@ def check_duplicate(cur, url, exclude_id=None):
     """
 
     values = [url]
+
+    if user_id is not None:
+        sql += " AND user_id = %s"
+        values.append(user_id)
 
     if exclude_id is not None:
         sql += " AND id <> %s"
@@ -193,17 +208,20 @@ def check_duplicate(cur, url, exclude_id=None):
 
 
 @router.get("")
-def list_jobs():
+def list_jobs(user: Optional[AuthUser] = Depends(request_user)):
     try:
         with get_pool().connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
-                cur.execute(
-                    f"""
+                sql = f"""
                     SELECT {JOB_COLUMNS}
                     FROM public.jobs
-                    ORDER BY created_at DESC
-                    """
-                )
+                """
+                values = []
+                if user is not None:
+                    sql += " WHERE user_id = %s"
+                    values.append(user.id)
+                sql += " ORDER BY created_at DESC"
+                cur.execute(sql, values)
 
                 return cur.fetchall()
 
@@ -217,18 +235,20 @@ def list_statuses():
 
 
 @router.get("/{job_id}")
-def get_job(job_id: int):
+def get_job(job_id: int, user: Optional[AuthUser] = Depends(request_user)):
     try:
         with get_pool().connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
-                cur.execute(
-                    f"""
+                sql = f"""
                     SELECT {JOB_COLUMNS}
                     FROM public.jobs
                     WHERE id = %s
-                    """,
-                    (job_id,),
-                )
+                """
+                values = [job_id]
+                if user is not None:
+                    sql += " AND user_id = %s"
+                    values.append(user.id)
+                cur.execute(sql, values)
 
                 row = cur.fetchone()
 
@@ -245,7 +265,7 @@ def get_job(job_id: int):
 
 
 @router.post("")
-def create_job(job: JobCreate):
+def create_job(job: JobCreate, user: Optional[AuthUser] = Depends(request_user)):
     data = job.model_dump()
 
     for key in ("title", "company", "status"):
@@ -258,21 +278,32 @@ def create_job(job: JobCreate):
     if data["applied_at"] is None:
         data["applied_at"] = today_hk()
 
+    columns = list(JOB_FIELDS)
+    values = [data[key] for key in JOB_FIELDS]
+
+    if user is not None:
+        columns.append("user_id")
+        values.append(user.id)
+
     try:
         with get_pool().connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
-                check_duplicate(cur, data.get("url"))
+                check_duplicate(
+                    cur,
+                    data.get("url"),
+                    user_id=user.id if user else None,
+                )
 
                 try:
                     with conn.transaction():
                         placeholders = ", ".join(
-                            ["%s"] * len(JOB_FIELDS)
+                            ["%s"] * len(columns)
                         )
 
                         cur.execute(
                             f"""
                             INSERT INTO public.jobs
-                                ({", ".join(JOB_FIELDS)})
+                                ({", ".join(columns)})
                             VALUES ({placeholders})
                             RETURNING
                                 id,
@@ -281,13 +312,17 @@ def create_job(job: JobCreate):
                                 status,
                                 applied_at
                             """,
-                            [data[key] for key in JOB_FIELDS],
+                            values,
                         )
 
                         row = cur.fetchone()
 
                 except UniqueViolation:
-                    check_duplicate(cur, data.get("url"))
+                    check_duplicate(
+                        cur,
+                        data.get("url"),
+                        user_id=user.id if user else None,
+                    )
 
                     raise HTTPException(
                         status_code=409,
@@ -306,7 +341,7 @@ def create_job(job: JobCreate):
 
 
 @router.patch("/{job_id}")
-def update_job(job_id: int, job: JobUpdate):
+def update_job(job_id: int, job: JobUpdate, user: Optional[AuthUser] = Depends(request_user)):
     fields = job.model_dump(exclude_unset=True)
 
     if not fields:
@@ -325,16 +360,18 @@ def update_job(job_id: int, job: JobUpdate):
     try:
         with get_pool().connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
-                cur.execute(
-                    """
+                select_sql = """
                     SELECT id, applied_at
                     FROM public.jobs
                     WHERE id = %s
-                    FOR UPDATE
-                    """,
-                    (job_id,),
-                )
+                """
+                select_values = [job_id]
+                if user is not None:
+                    select_sql += " AND user_id = %s"
+                    select_values.append(user.id)
+                select_sql += " FOR UPDATE"
 
+                cur.execute(select_sql, select_values)
                 old = cur.fetchone()
 
                 if old is None:
@@ -353,6 +390,7 @@ def update_job(job_id: int, job: JobUpdate):
                     cur,
                     fields.get("url"),
                     exclude_id=job_id,
+                    user_id=user.id if user else None,
                 )
 
                 fields["updated_at"] = datetime.now(
@@ -364,18 +402,20 @@ def update_job(job_id: int, job: JobUpdate):
                     for key in fields
                 )
 
+                update_sql = f"""
+                    UPDATE public.jobs
+                    SET {set_clause}
+                    WHERE id = %s
+                """
+                update_values = list(fields.values()) + [job_id]
+                if user is not None:
+                    update_sql += " AND user_id = %s"
+                    update_values.append(user.id)
+                update_sql += " RETURNING id"
+
                 try:
                     with conn.transaction():
-                        cur.execute(
-                            f"""
-                            UPDATE public.jobs
-                            SET {set_clause}
-                            WHERE id = %s
-                            RETURNING id
-                            """,
-                            list(fields.values()) + [job_id],
-                        )
-
+                        cur.execute(update_sql, update_values)
                         row = cur.fetchone()
 
                 except UniqueViolation:
@@ -383,6 +423,7 @@ def update_job(job_id: int, job: JobUpdate):
                         cur,
                         fields.get("url"),
                         exclude_id=job_id,
+                        user_id=user.id if user else None,
                     )
 
                     raise HTTPException(
@@ -402,19 +443,21 @@ def update_job(job_id: int, job: JobUpdate):
 
 
 @router.delete("/{job_id}")
-def delete_job(job_id: int):
+def delete_job(job_id: int, user: Optional[AuthUser] = Depends(request_user)):
     try:
         with get_pool().connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
-                cur.execute(
-                    """
+                sql = """
                     DELETE FROM public.jobs
                     WHERE id = %s
-                    RETURNING id
-                    """,
-                    (job_id,),
-                )
+                """
+                values = [job_id]
+                if user is not None:
+                    sql += " AND user_id = %s"
+                    values.append(user.id)
+                sql += " RETURNING id"
 
+                cur.execute(sql, values)
                 row = cur.fetchone()
 
     except OperationalError as exc:
