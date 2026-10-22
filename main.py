@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,9 +11,10 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from psycopg import OperationalError
 
+from app.auth_routes import router as auth_router
 from app.database import close_pool, open_pool
 from app.imports import router as imports_router
-from app.jobs import router as jobs_router
+from app.jobs import MULTI_USER_ENABLED, router as jobs_router
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -68,6 +70,10 @@ async def handle_db_unavailable(
 app.include_router(jobs_router)
 app.include_router(imports_router)
 
+# Authentication endpoints are available only in multi-user mode.
+if MULTI_USER_ENABLED:
+    app.include_router(auth_router)
+
 
 def website_response() -> FileResponse:
     if not WEB_FILE.is_file():
@@ -115,6 +121,7 @@ def api_info():
         "test_docs": "/test-docs",
         "jobs": "/jobs",
         "import_preview": "/imports/preview",
+        "multi_user_enabled": MULTI_USER_ENABLED,
     }
 
 
@@ -175,7 +182,6 @@ def test_docs():
         display: grid;
         place-items: center;
         width: 42px;
-        height: 42px;
         border-radius: 50%;
         color: var(--accent);
         background: #ffffffd9;
@@ -248,7 +254,6 @@ def test_docs():
 
         const icon = document.createElement("span");
         icon.className = "jt-icon";
-        icon.setAttribute("aria-hidden", "true");
         icon.textContent = {
           success: "✓",
           warning: "!",
@@ -304,17 +309,6 @@ def test_docs():
         }
 
         function pause() {
-          if (timer !== null) {
-            clearTimeout(timer);
-            timer = null;
-            remaining = Math.max(
-              0,
-              remaining - (Date.now() - started)
-            );
-          }
-        }
-
-        function resume() {
           if (
             dismissed ||
             type === "error" ||
@@ -324,9 +318,6 @@ def test_docs():
           ) {
             return;
           }
-
-          started = Date.now();
-          timer = setTimeout(dismiss, remaining);
         }
 
         close.addEventListener("click", dismiss);
@@ -392,11 +383,7 @@ def test_docs():
         window.showJobTrailToast({
           type: known ? "success" : "info",
           title: known ? known[0] : "資料已讀取",
-          message: known
-            ? known[1]
-            : Array.isArray(body)
-              ? "目前共有 " + body.length + " 筆職位紀錄。"
-              : "請求已完成，可在下方查看回應資料。"
+          message: known ? known[1] : "請求已完成。"
         });
 
         return response;
