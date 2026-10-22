@@ -1,122 +1,103 @@
-"""Integration tests requiring a disposable PostgreSQL database.
-
-Run locally with, for example:
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres pytest tests/test_accounts_integration.py
-"""
+"""Real storage tests. Run with python scripts/run_db_tests.py."""
 import pytest
 from psycopg import errors
-
-from app.accounts import (
-    authenticate_user,
-    create_session,
-    create_user,
-    delete_expired_sessions,
-    resolve_session,
-    revoke_session,
-)
-from app.auth_security import hash_password, session_token_hash
-
+from app.accounts import authenticate_user, create_user, create_session, resolve_session, revoke_session, delete_expired_sessions
+from app.auth_security import session_token_hash
 
 pytestmark = pytest.mark.integration
 
 
+def user(db):
+    result = create_user(db, 'Friend@example.com', 'password123', reserved_email='owner@example.com')
+    db.commit()
+    return result
+
+
+def expire(db, token):
+    db.execute(
+        "UPDATE public.jt_sessions SET created_at = NOW() - INTERVAL '2 hours', expires_at = NOW() - INTERVAL '1 hour' WHERE token_hash = %s",
+        (session_token_hash(token),),
+    )
+    db.commit()
+
+
 def test_register_login_and_session_round_trip(db):
-    user = create_user(db, "Friend@example.com", "password123", reserved_email="owner@example.com")
+    account = user(db)
+    assert account['email'] == 'friend@example.com'
+    assert authenticate_user(db, ' FRIEND@EXAMPLE.COM ', 'password123') == account
+    token = create_session(db, account['id'])
     db.commit()
-    assert user["email"] == "friend@example.com"
-
-    authenticated = authenticate_user(db, " FRIEND@EXAMPLE.COM ", "password123")
-    db.commit()
-    assert authenticated["id"] == user["id"]
-
-    token = create_session(db, user["id"])
-    db.commit()
-    assert resolve_session(db, token)["id"] == user["id"]
-    db.commit()
+    assert resolve_session(db, token) == account
+    row = db.execute('SELECT token_hash FROM public.jt_sessions').fetchone()
+    assert row[0] == session_token_hash(token)
+    assert row[0] != token
 
 
 def test_duplicate_email_is_rejected_by_database(db):
-    create_user(db, "friend@example.com", "password123", reserved_email="owner@example.com")
-    db.commit()
+    user(db)
     with pytest.raises(errors.UniqueViolation):
-        create_user(db, "Friend@example.com", "password123", reserved_email="owner@example.com")
+        create_user(db, 'FRIEND@example.com', 'password123', reserved_email='owner@example.com')
     db.rollback()
 
 
 def test_wrong_password_and_disabled_account_fail(db):
-    user = create_user(db, "friend@example.com", "password123", reserved_email="owner@example.com")
+    account = user(db)
+    assert authenticate_user(db, account['email'], 'incorrect123') is None
+    token = create_session(db, account['id'])
     db.commit()
-    assert authenticate_user(db, "friend@example.com", "incorrect123") is None
+    db.execute('UPDATE public.jt_users SET is_active = FALSE WHERE id = %s', (account['id'],))
     db.commit()
-
-    with db.cursor() as cur:
-        cur.execute("UPDATE public.jt_users SET is_active = FALSE WHERE id = %s", (user["id"],))
-    db.commit()
-    assert authenticate_user(db, "friend@example.com", "password123") is None
-    db.commit()
+    assert authenticate_user(db, account['email'], 'password123') is None
+    assert resolve_session(db, token) is None
 
 
 def test_expired_session_cannot_resolve(db):
-    user = create_user(db, "friend@example.com", "password123", reserved_email="owner@example.com")
+    account = user(db)
+    token = create_session(db, account['id'])
     db.commit()
-    token = create_session(db, user["id"])
-    db.commit()
-    with db.cursor() as cur:
-        cur.execute("UPDATE public.jt_sessions SET expires_at = NOW() - INTERVAL '1 minute' WHERE token_hash = %s", (session_token_hash(token),))
-    db.commit()
+    expire(db, token)
     assert resolve_session(db, token) is None
-    db.commit()
 
 
 def test_logout_and_expiry_cleanup(db):
-    user = create_user(db, "friend@example.com", "password123", reserved_email="owner@example.com")
+    account = user(db)
+    active = create_session(db, account['id'])
+    expired = create_session(db, account['id'])
     db.commit()
-    active = create_session(db, user["id"])
-    expired = create_session(db, user["id"])
-    db.commit()
-    with db.cursor() as cur:
-        cur.execute("UPDATE public.jt_sessions SET expires_at = NOW() - INTERVAL '1 minute' WHERE token_hash = %s", (session_token_hash(expired),))
-    db.commit()
-
-    revoke_session(db, active)
-    db.commit()
-    with db.cursor() as cur:
-        cur.execute("SELECT COUNT(*) FROM public.jt_sessions WHERE token_hash = %s", (session_token_hash(active),))
-        assert cur.fetchone()[0] == 0
-
+    expire(db, expired)
     delete_expired_sessions(db)
     db.commit()
-    with db.cursor() as cur:
-        cur.execute("SELECT COUNT(*) FROM public.jt_sessions")
-        assert cur.fetchone()[0] == 0
+    assert resolve_session(db, active) == account
+    assert resolve_session(db, expired) is None
+    revoke_session(db, active)
+    db.commit()
+    assert resolve_session(db, active) is None
+    assert db.execute('SELECT COUNT(*) FROM public.jt_sessions').fetchone()[0] == 0
 
 
 def test_owner_address_is_reserved(db):
     with pytest.raises(ValueError):
-        create_user(db, "owner@example.com", "password123", reserved_email="owner@example.com")
-    db.rollback()
+        create_user(db, 'owner@example.com', 'password123', reserved_email='owner@example.com')
+    assert db.execute('SELECT COUNT(*) FROM public.jt_users').fetchone()[0] == 0
 
 
 def test_jobs_user_id_foreign_key(db):
-    user = create_user(db, "friend@example.com", "password123", reserved_email="owner@example.com")
+    account = user(db)
+    db.execute('INSERT INTO public.jobs (title, company, user_id) VALUES (%s, %s, %s)', ('Engineer', 'Example', account['id']))
     db.commit()
-    with db.cursor() as cur:
-        cur.execute(
-            "INSERT INTO public.jobs (title, company, user_id) VALUES (%s, %s, %s) RETURNING id",
-            ("Backend Engineer", "Example Ltd", user["id"]),
-        )
-        job_id = cur.fetchone()[0]
-    db.commit()
-    with db.cursor() as cur:
-        cur.execute("SELECT user_id FROM public.jobs WHERE id = %s", (job_id,))
-        assert cur.fetchone()[0] == user["id"]
+    with pytest.raises(errors.ForeignKeyViolation):
+        db.execute('INSERT INTO public.jobs (title, company, user_id) VALUES (%s, %s, %s)', ('Engineer', 'Example', -1))
+    db.rollback()
+    assert db.execute('SELECT user_id FROM public.jobs').fetchone()[0] == account['id']
 
 
 def test_invalid_hash_format_is_rejected(db):
     with pytest.raises(errors.CheckViolation):
-        with db.cursor() as cur:
-            cur.execute(
-                "INSERT INTO public.jt_users (email, password_hash) VALUES (%s, %s)",
-                ("badhash@example.com", "not-a-valid-hash"),
-            )
+        db.execute('INSERT INTO public.jt_users (email, password_hash) VALUES (%s, %s)', ('bad@example.com', 'invalid'))
     db.rollback()
+
+
+def test_caller_can_roll_back_registration(db):
+    create_user(db, 'rollback@example.com', 'password123', reserved_email='owner@example.com')
+    db.rollback()
+    assert db.execute('SELECT COUNT(*) FROM public.jt_users').fetchone()[0] == 0
