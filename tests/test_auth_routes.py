@@ -41,7 +41,8 @@ def register_response(client, email="friend@example.com", password="password123"
 def test_register_creates_account_and_sets_secure_cookies(app_and_pool, client):
     _, conn, _ = app_and_pool
     conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com")
-    response = register_response(client)
+    with patch("app.auth_routes.send_verification_email") as send_email:
+        response = register_response(client)
     assert response.status_code == 201
     assert response.json() == {"message": "Account created", "user": {"id": 2, "email": "friend@example.com"}}
     assert response.cookies.get(SESSION_COOKIE)
@@ -50,7 +51,8 @@ def test_register_creates_account_and_sets_secure_cookies(app_and_pool, client):
     assert "HttpOnly" in set_cookie
     assert "SameSite=lax" in set_cookie
     assert "Secure" not in set_cookie
-    conn.commit.assert_called_once()
+    assert conn.commit.call_count == 2
+    send_email.assert_called_once()
 
 
 def test_register_rejects_short_password_and_invalid_email(client):
@@ -89,16 +91,20 @@ def test_me_requires_session(app_and_pool, client):
     _, conn, _ = app_and_pool
     assert client.get("/auth/me").status_code == 401
 
-    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com")
+    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com", None)
     client.cookies.set(SESSION_COOKIE, "A" * 43)
     response = client.get("/auth/me")
     assert response.status_code == 200
-    assert response.json()["user"]["email"] == "friend@example.com"
+    assert response.json()["user"] == {
+        "id": 2,
+        "email": "friend@example.com",
+        "email_verified": False,
+    }
 
 
 def test_logout_requires_csrf_and_clears_cookies(app_and_pool, client):
     _, conn, _ = app_and_pool
-    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com")
+    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com", None)
     client.cookies.set(SESSION_COOKIE, "A" * 43)
     client.cookies.set(CSRF_COOKIE, "csrf-token")
 

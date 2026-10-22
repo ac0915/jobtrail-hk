@@ -63,13 +63,15 @@ class AccountStorageTests(unittest.TestCase):
             create_session(conn, 99)
 
     def test_resolve_checks_expiry_and_active_user(self):
-        conn, cur = self.connection((2, "friend@example.com"))
+        conn, cur = self.connection((2, "friend@example.com", None))
         token = new_session_token()
-        self.assertEqual(resolve_session(conn, token), {"id": 2, "email": "friend@example.com"})
+        self.assertEqual(resolve_session(conn, token), {"id": 2, "email": "friend@example.com", "email_verified": False})
         sql, params = cur.execute.call_args.args
         self.assertEqual(params, (session_token_hash(token),))
         self.assertIn("s.expires_at > NOW()", sql)
         self.assertIn("u.is_active", sql)
+        cur.fetchone.return_value = (2, "friend@example.com", "2026-01-01")
+        self.assertEqual(resolve_session(conn, token), {"id": 2, "email": "friend@example.com", "email_verified": True})
         cur.fetchone.return_value = None
         self.assertIsNone(resolve_session(conn, token))
 
