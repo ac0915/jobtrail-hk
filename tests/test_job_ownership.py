@@ -100,10 +100,18 @@ def test_update_and_delete_scope_by_user(monkeypatch, jobs_app):
 def test_duplicate_check_scopes_by_user(monkeypatch, jobs_app):
     app, cursor, _ = jobs_app
     monkeypatch.setattr(jobs_module, "MULTI_USER_ENABLED", True)
-    cursor.fetchone.return_value = None
+    cursor.fetchone.side_effect = [None, {"id": 1, "created_at": "now", "updated_at": "now", "status": "saved", "applied_at": "today"}]
     client = client_for(app, User(7))
-    client.post("/jobs", json={"title": "Engineer", "company": "Example", "url": "https://example.com/job"})
-    duplicate_call = next(call for call in cursor.execute.call_args_list if "FROM public.jobs" in call.args[0] and "url = %s" in call.args[0])
+    response = client.post("/jobs", json={"title": "Engineer", "company": "Example", "url": "https://example.com/job"})
+    assert response.status_code == 200
+
+    duplicate_call = next(
+        call
+        for call in cursor.execute.call_args_list
+        if "FROM public.jobs" in call.args[0]
+        and "url = %s" in call.args[0]
+        and "INSERT INTO" not in call.args[0]
+    )
     assert "AND user_id = %s" in duplicate_call.args[0]
     assert duplicate_call.args[1] == ["https://example.com/job", 7]
 
