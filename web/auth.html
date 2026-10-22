@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Login | JobTrail HK</title>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f5fffd;color:#17212a;font-family:Arial,sans-serif}.card{width:min(100%,560px);padding:48px 56px;background:white;border:1px solid #c5e9e4;border-radius:32px;box-shadow:0 8px 36px #163a3210}h1{text-align:center;font-size:27px;margin:0 0 36px}.brand{text-align:center;font-size:13px;color:#657671;margin-bottom:14px}label{display:block;font-size:14px;margin-bottom:9px}.field{margin-bottom:22px}input{width:100%;border:1px solid transparent;border-radius:15px;background:#f6f7f7;padding:20px;font:inherit;color:inherit}input:focus{outline:2px solid #41b9bc;outline-offset:1px;background:#fff}.password{position:relative}.password input{padding-right:76px}.toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:none;padding:8px;color:#29676b;cursor:pointer}button{font:inherit}button:focus-visible,a:focus-visible{outline:3px solid #41b9bc;outline-offset:3px}.primary{width:100%;border:0;border-radius:15px;background:#030b32;color:white;padding:20px;font-size:19px;font-weight:600;cursor:pointer;margin-top:12px}.primary:disabled{opacity:.55;cursor:wait}.switch{text-align:center;margin:24px 0 0;font-size:14px;color:#68736f}.link{border:0;background:none;color:#08123d;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:4px}.hint{font-size:12px;color:#657671;line-height:1.5;margin:8px 0 0}.message{font-size:14px;line-height:1.5;color:#9d273a;margin:18px 0 0;overflow-wrap:anywhere}.identity{overflow-wrap:anywhere;text-align:center}.jobs{display:block;text-align:center;color:#08123d;margin:24px 0} [hidden]{display:none!important}@media(max-width:480px){body{padding:16px}.card{padding:32px 24px;border-radius:26px}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f5fffd;color:#17212a;font-family:Arial,sans-serif}.card{width:min(100%,560px);padding:48px 56px;background:white;border:1px solid #c5e9e4;border-radius:32px;box-shadow:0 8px 36px #163a3210}h1{text-align:center;font-size:27px;margin:0 0 36px}.brand{text-align:center;font-size:13px;color:#657671;margin-bottom:14px}label{display:block;font-size:14px;margin-bottom:9px}.field{margin-bottom:22px}input{width:100%;border:1px solid transparent;border-radius:15px;background:#f6f7f7;padding:20px;font:inherit;color:inherit}input:focus{outline:2px solid #41b9bc;outline-offset:1px;background:#fff}.password{position:relative}.password input{padding-right:76px}.toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:none;padding:8px;color:#29676b;cursor:pointer}button{font:inherit}button:focus-visible,a:focus-visible{outline:3px solid #41b9bc;outline-offset:3px}.primary{width:100%;border:0;border-radius:15px;background:#030b32;color:white;padding:20px;font-size:19px;font-weight:600;cursor:pointer;margin-top:12px}.primary:disabled{opacity:.55;cursor:wait}.switch{text-align:center;margin:24px 0 0;font-size:14px;color:#68736f}.link{border:0;background:none;color:#08123d;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:4px}.hint{font-size:12px;color:#657671;line-height:1.5;margin:8px 0 0}.message{font-size:14px;line-height:1.5;color:#9d273a;margin:18px 0 0;overflow-wrap:anywhere} [hidden]{display:none!important}@media(max-width:480px){body{padding:16px}.card{padding:32px 24px;border-radius:26px}}
 </style>
 </head>
 <body>
@@ -19,13 +19,12 @@
 <button id="submit" class="primary" type="submit" disabled>Login</button>
 <p class="switch"><span id="switch-copy">No account yet?</span> <button id="switch" class="link" type="button">Register</button></p>
 </form>
-<section id="signed-in" hidden><p id="identity" class="identity"></p><a class="jobs" href="/profile/my-jobs">Go to My Jobs</a><button id="logout" class="primary" type="button">Logout</button></section>
 <p id="message" class="message" role="status" aria-live="polite"></p>
 </main>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-let registering=false,enabled=false,busy=false;
+let registering=false,enabled=false,busy=false,redirecting=false;
 function message(text){$('message').textContent=text;}
 function setMode(){
  $('heading').textContent=registering?'Create account':'Login';
@@ -39,10 +38,11 @@ function setMode(){
  $('password').autocomplete=registering?'new-password':'current-password';
  $('password').value='';$('confirm').value='';message('');
 }
-function signedIn(user){
- $('auth-form').hidden=true;$('signed-in').hidden=false;
- $('heading').textContent='Welcome';$('identity').textContent='Signed in as '+user.email;
- $('password').value='';$('confirm').value='';message('');
+function signedIn(){
+ redirecting=true;busy=true;
+ $('password').value='';$('confirm').value='';
+ $('auth-form').hidden=true;
+ window.location.replace('/profile/my-jobs');
 }
 async function api(path,options={}){
  const response=await fetch(path,{credentials:'same-origin',cache:'no-store',...options});
@@ -62,25 +62,17 @@ $('auth-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!enabled||busy)return;
  if(registering&&$('password').value!==$('confirm').value){message('Passwords do not match.');$('confirm').focus();return;}
  busy=true;$('submit').disabled=true;$('switch').disabled=true;message('Please wait…');
- try{const data=await api('/auth/'+(registering?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});signedIn(data.user);}
+ try{await api('/auth/'+(registering?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});signedIn();}
  catch(error){message(error.message);}
- finally{busy=false;$('submit').disabled=!enabled;$('switch').disabled=false;}
-});
-$('logout').addEventListener('click',async()=>{
- $('logout').disabled=true;
- try{
-  const pair=document.cookie.split('; ').find(value=>value.startsWith('jt_csrf='));
-  const token=pair?decodeURIComponent(pair.slice('jt_csrf='.length)):'';
-  await api('/auth/logout',{method:'POST',headers:{'X-CSRF-Token':token}});
-  $('signed-in').hidden=true;$('auth-form').hidden=false;registering=false;setMode();message('You have been signed out.');
- }catch(error){message(error.message);}finally{$('logout').disabled=false;}
+ finally{if(!redirecting){busy=false;$('submit').disabled=!enabled;$('switch').disabled=false;}}
 });
 (async()=>{
  if(location.protocol==='file:'){message('Design preview only. Sign-in requires the app server and multi-user mode.');return;}
  try{
-  const config=await api('/api-info');enabled=config.multi_user_enabled===true;$('submit').disabled=!enabled;
+  const config=await api('/api-info');enabled=config.multi_user_enabled===true;
   if(!enabled){message('Email sign-in is not enabled on this instance yet.');return;}
-  try{const data=await api('/auth/me');signedIn(data.user);}catch(error){if(error.status!==401)message(error.message);}
+  try{await api('/auth/me');signedIn();}catch(error){if(error.status!==401)message(error.message);}
+  if(!redirecting)$('submit').disabled=false;
  }catch(error){message('Unable to connect to the app. Please try again later.');}
 })();
 </script>
