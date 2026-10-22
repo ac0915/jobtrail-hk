@@ -9,6 +9,9 @@ import app.jobs as jobs_module
 from app.jobs import router
 
 
+CSRF_TOKEN = "test-csrf-token"
+
+
 @pytest.fixture()
 def jobs_app():
     app = FastAPI()
@@ -27,7 +30,11 @@ def client_for(app, user):
         app.dependency_overrides[jobs_module.request_user] = lambda: user
     else:
         app.dependency_overrides[jobs_module.request_user] = lambda: None
-    return TestClient(app)
+    client = TestClient(app)
+    if user is not None:
+        client.cookies.set("jt_csrf", CSRF_TOKEN)
+        client.headers.update({"X-CSRF-Token": CSRF_TOKEN})
+    return client
 
 
 class User:

@@ -12,7 +12,7 @@ from psycopg.errors import UniqueViolation
 from psycopg.rows import dict_row
 from pydantic import BaseModel, field_validator
 
-from app.auth_routes import AuthUser, current_user
+from app.auth_routes import AuthUser, _require_csrf, current_user
 from app.cover_letters import router as cover_letters_router
 from app.database import get_pool
 from app.validation import (
@@ -143,6 +143,12 @@ def request_user(request: Request) -> Optional[AuthUser]:
     return current_user(request)
 
 
+def require_job_csrf(request: Request) -> None:
+    """Protect state-changing job requests in multi-user mode."""
+    if MULTI_USER_ENABLED:
+        _require_csrf(request)
+
+
 def prepare_application_update(
     fields,
     existing_applied_at,
@@ -265,7 +271,8 @@ def get_job(job_id: int, user: Optional[AuthUser] = Depends(request_user)):
 
 
 @router.post("")
-def create_job(job: JobCreate, user: Optional[AuthUser] = Depends(request_user)):
+def create_job(job: JobCreate, request: Request, user: Optional[AuthUser] = Depends(request_user)):
+    require_job_csrf(request)
     data = job.model_dump()
 
     for key in ("title", "company", "status"):
@@ -341,7 +348,8 @@ def create_job(job: JobCreate, user: Optional[AuthUser] = Depends(request_user))
 
 
 @router.patch("/{job_id}")
-def update_job(job_id: int, job: JobUpdate, user: Optional[AuthUser] = Depends(request_user)):
+def update_job(job_id: int, job: JobUpdate, request: Request, user: Optional[AuthUser] = Depends(request_user)):
+    require_job_csrf(request)
     fields = job.model_dump(exclude_unset=True)
 
     if not fields:
@@ -443,7 +451,8 @@ def update_job(job_id: int, job: JobUpdate, user: Optional[AuthUser] = Depends(r
 
 
 @router.delete("/{job_id}")
-def delete_job(job_id: int, user: Optional[AuthUser] = Depends(request_user)):
+def delete_job(job_id: int, request: Request, user: Optional[AuthUser] = Depends(request_user)):
+    require_job_csrf(request)
     try:
         with get_pool().connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
