@@ -42,6 +42,9 @@ def verification_app(db, database_url, monkeypatch):
         with TestClient(app) as client:
             response = client.post('/auth/register', json={'email': 'verify@example.com', 'password': 'password123'})
             assert response.status_code == 201
+            csrf_token = response.cookies.get(auth.CSRF_COOKIE)
+            assert csrf_token
+            client.headers.update({auth.CSRF_HEADER: csrf_token})
             yield client, db, sent
     finally:
         auth._limiter.attempts.clear()
@@ -68,7 +71,12 @@ def test_verification_token_marks_account_verified_once(verification_app):
 def test_expired_token_is_rejected(verification_app):
     client, db, sent = verification_app
     db.execute(
-        "UPDATE public.jt_email_tokens SET expires_at = NOW() - INTERVAL '1 second' WHERE user_id = %s",
+        """
+        UPDATE public.jt_email_tokens
+        SET created_at = NOW() - INTERVAL '25 hours',
+            expires_at = NOW() - INTERVAL '1 hour'
+        WHERE user_id = %s
+        """,
         (client.get('/auth/me').json()['user']['id'],),
     )
     db.commit()
