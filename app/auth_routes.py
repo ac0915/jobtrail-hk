@@ -11,8 +11,9 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from app.accounts import authenticate_user, create_session, create_user, resolve_session, revoke_session
 from app.auth_limits import AttemptLimiter, RateLimited
 from app.database import get_pool
-from app.email import send_verification_email
+from app.email import send_password_reset_email, send_verification_email
 from app.email_verification import create_verification_token, verify_email_token
+from app.password_reset import create_password_reset_token, reset_password
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,22 @@ class LoginRequest(BaseModel):
 class VerifyEmailRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     token: str = Field(min_length=32, max_length=128)
+
+
+class ForgotPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: EmailStr = Field(min_length=3, max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def strip_email(cls, value: EmailStr) -> EmailStr:
+        return value.strip()
+
+
+class ResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    token: str = Field(min_length=32, max_length=128)
+    password: str = Field(min_length=8, max_length=20)
 
 
 class AuthUser(BaseModel):
@@ -92,13 +109,11 @@ def _issue_session(response: Response, conn, user_id: int) -> None:
     response.set_cookie(CSRF_COOKIE, csrf, max_age=12 * 60 * 60, httponly=False, secure=secure, samesite="lax", path="/")
 
 
-def _send_verification(conn, email: str, user_id: int) -> None:
-    raw_token = create_verification_token(conn, user_id)
-    conn.commit()
+def _send_email(message, email: str, raw_token: str) -> None:
     try:
-        send_verification_email(email, raw_token)
+        message(email, raw_token)
     except Exception:
-        logger.exception("Could not send verification email to %s.", email)
+        logger.exception("Could not send email to %s.", email)
 
 
 def _require_csrf(request: Request) -> None:
@@ -135,7 +150,9 @@ def register(payload: RegisterRequest, request: Request, response: Response):
             user = create_user(conn, payload.email, payload.password, reserved_email=RESERVED_OWNER_EMAIL)
             conn.commit()
             _issue_session(response, conn, user["id"])
-            _send_verification(conn, user["email"], user["id"])
+            raw_token = create_verification_token(conn, user["id"])
+            conn.commit()
+            _send_email(send_verification_email, user["email"], raw_token)
     except ValueError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
     except errors.UniqueViolation as exc:
@@ -187,8 +204,35 @@ def resend_verification(request: Request, user: AuthUser = Depends(current_user)
     if user.email_verified:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "This email address is already verified.")
     with _pool().connection(timeout=30) as conn:
-        _send_verification(conn, user.email, user.id)
+        raw_token = create_verification_token(conn, user.id)
+        conn.commit()
+        _send_email(send_verification_email, user.email, raw_token)
     return {"message": "Verification email sent"}
+
+
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, request: Request):
+    _json_body_size(request)
+    _rate_limit(request, "forgot_password")
+    with _pool().connection(timeout=30) as conn:
+        raw_token = create_password_reset_token(conn, payload.email)
+        conn.commit()
+        if raw_token is not None:
+            _send_email(send_password_reset_email, payload.email, raw_token)
+    return {"message": "If that email has an account, a reset link has been sent."}
+
+
+@router.post("/reset-password")
+def reset_password_endpoint(payload: ResetPasswordRequest, request: Request):
+    _json_body_size(request)
+    _rate_limit(request, "reset_password")
+    try:
+        with _pool().connection(timeout=30) as conn:
+            user = reset_password(conn, payload.token, payload.password)
+            conn.commit()
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+    return {"message": "Password updated. Please sign in again.", "user": {"id": user["id"], "email": user["email"]}}
 
 
 @router.post("/logout")
