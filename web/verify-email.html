@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify email · JobTrail HK</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #233047;
+      background: #eef2f8;
+      --blue: #2855c5;
+      --blue-dark: #1c3e98;
+      --muted: #5c6c83;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+    .card {
+      width: min(520px, 100%);
+      padding: 36px;
+      border: 1px solid #c9d8f0;
+      border-radius: 22px;
+      background: white;
+      box-shadow: 0 16px 45px #1d30521a;
+    }
+    .brand { display: inline-block; margin-bottom: 22px; color: #23468d; font-size: 21px; font-weight: 750; text-decoration: none; }
+    h1 { margin: 0 0 10px; font-size: 30px; letter-spacing: -.6px; color: #1c2940; }
+    p { line-height: 1.7; color: var(--muted); }
+    .status { margin: 22px 0; padding: 16px; border-radius: 12px; background: #eef3ff; color: #31538d; overflow-wrap: anywhere; }
+    .status.success { background: #e7f8ee; color: #1f6c4d; }
+    .status.error { background: #fff0f2; color: #a62739; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .button {
+      display: inline-block; padding: 11px 16px; border: 1px solid #c5d0e1;
+      border-radius: 10px; background: white; color: #33465f; font-weight: 600; text-decoration: none;
+    }
+    .button.primary { background: var(--blue); border-color: var(--blue); color: white; }
+    .button.primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+    .button:hover { background: #edf3ff; border-color: #9eb7e3; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <a class="brand" href="/">JobTrail HK</a>
+    <h1>Verify your email</h1>
+    <p>We are confirming your email address. This should only take a moment.</p>
+    <div id="verification-status" class="status" role="status" aria-live="polite">Checking your verification link…</div>
+    <div class="actions">
+      <a class="button primary" href="/profile/my-jobs">Go to My Jobs</a>
+      <a class="button" href="/">Find Jobs</a>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const status = document.getElementById('verification-status');
+      const token = new URLSearchParams(window.location.search).get('token');
+
+      if (!token) {
+        status.className = 'status error';
+        status.textContent = 'Verification link is missing. Please use the link from your verification email.';
+        return;
+      }
+
+      fetch('/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token })
+      })
+        .then(async function (response) {
+          const data = await response.json().catch(function () { return {}; });
+          if (response.ok) {
+            status.className = 'status success';
+            status.textContent = data.message || 'Email verified successfully.';
+          } else {
+            status.className = 'status error';
+            status.textContent = data.detail || 'This verification link is invalid or has expired.';
+          }
+        })
+        .catch(function () {
+          status.className = 'status error';
+          status.textContent = 'Could not reach JobTrail. Please try again.';
+        });
+    })();
+  </script>
+</body>
+</html>

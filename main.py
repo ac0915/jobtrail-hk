@@ -19,6 +19,7 @@ from app.jobs import MULTI_USER_ENABLED, router as jobs_router
 
 BASE_DIR = Path(__file__).resolve().parent
 WEB_FILE = BASE_DIR / "web" / "index.html"
+VERIFY_EMAIL_FILE = BASE_DIR / "web" / "verify-email.html"
 
 
 @asynccontextmanager
@@ -88,6 +89,19 @@ def website_response() -> FileResponse:
     )
 
 
+def verify_email_response() -> FileResponse:
+    if not VERIFY_EMAIL_FILE.is_file():
+        raise HTTPException(
+            status_code=500,
+            detail="Verification page missing: create web/verify-email.html.",
+        )
+
+    return FileResponse(
+        VERIFY_EMAIL_FILE,
+        media_type="text/html",
+    )
+
+
 @app.get("/", include_in_schema=False)
 def home_page():
     return website_response()
@@ -109,6 +123,11 @@ def legacy_my_jobs_page():
     return website_response()
 
 
+@app.get("/verify-email", include_in_schema=False)
+def verify_email_page():
+    return verify_email_response()
+
+
 # The old root JSON response is available here.
 @app.get("/api-info", tags=["System"])
 def api_info():
@@ -117,6 +136,7 @@ def api_info():
         "home": "/",
         "profile": "/profile",
         "my_jobs": "/profile/my-jobs",
+        "verify_email": "/verify-email",
         "docs": "/docs",
         "test_docs": "/test-docs",
         "jobs": "/jobs",
@@ -198,7 +218,7 @@ def test_docs():
       .jt-message {
         margin: 0;
         color: #4b5b70;
-        font-size: 14px;
+        font-size: 16px;
         line-height: 1.6;
         white-space: pre-wrap;
         overflow-wrap: anywhere;
