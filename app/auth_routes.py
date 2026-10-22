@@ -149,7 +149,6 @@ def register(payload: RegisterRequest, request: Request, response: Response):
         with _pool().connection(timeout=30) as conn:
             user = create_user(conn, payload.email, payload.password, reserved_email=RESERVED_OWNER_EMAIL)
             conn.commit()
-            _issue_session(response, conn, user["id"])
             raw_token = create_verification_token(conn, user["id"])
             conn.commit()
             _send_email(send_verification_email, user["email"], raw_token)
@@ -157,7 +156,7 @@ def register(payload: RegisterRequest, request: Request, response: Response):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
     except errors.UniqueViolation as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, "An account with this email already exists.") from exc
-    return {"message": "Account created", "user": {"id": user["id"], "email": user["email"]}}
+    return {"message": "Account created. Check your email to verify your account.", "user": {"id": user["id"], "email": user["email"]}}
 
 
 @router.post("/login")
@@ -169,6 +168,8 @@ def login(payload: LoginRequest, request: Request, response: Response):
             user = authenticate_user(conn, payload.email, payload.password)
             if user is None:
                 raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password.")
+            if not user["email_verified"]:
+                raise HTTPException(status.HTTP_403_FORBIDDEN, "Please verify your email address before signing in.")
             conn.commit()
             _issue_session(response, conn, user["id"])
     except HTTPException:

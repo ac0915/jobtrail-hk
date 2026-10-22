@@ -62,7 +62,9 @@ $('auth-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!enabled||busy)return;
  if(registering&&$('password').value!==$('confirm').value){message('Passwords do not match.');$('confirm').focus();return;}
  busy=true;$('submit').disabled=true;$('switch').disabled=true;message('Please wait…');
- try{await api('/auth/'+(registering?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});signedIn();}
+ try{await api('/auth/'+(registering?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});
+  if(registering){message('Account created. Check your email and click the verification link.');registering=false;setMode();}
+  else{signedIn();}}
  catch(error){message(error.message);}
  finally{if(!redirecting){busy=false;$('submit').disabled=!enabled;$('switch').disabled=false;}}
 });
