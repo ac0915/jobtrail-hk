@@ -1,0 +1,109 @@
+/* Mint theme overlay for the main JobTrail interface. */
+:root {
+  --blue: #41b9bc;
+  --blue-dark: #2d9295;
+  --muted: #657671;
+  color: #17212a;
+  background: #f5fffd;
+}
+
+body,
+main {
+  background: #f5fffd;
+}
+
+.site-header {
+  background: #e3f7f4;
+  border-bottom-color: var(--blue);
+  box-shadow: 0 3px 12px #163a3210;
+}
+
+.brand {
+  color: #1d6367;
+}
+
+#breadcrumb {
+  color: #5d7370;
+}
+
+.sidebar {
+  background: white;
+  border-right-color: #c5e9e4;
+}
+
+.nav a {
+  color: #43615e;
+}
+
+.nav a:hover {
+  background: #edfaf7;
+}
+
+.nav a.active {
+  background: #dcf5f1;
+  border-color: #a9ded9;
+  color: #14666a;
+  box-shadow: inset 4px 0 0 var(--blue);
+}
+
+button,
+.button {
+  border-color: #b9ddd8;
+  color: #2f4b48;
+}
+
+button:hover,
+.button:hover {
+  background: #ecfaf7;
+  border-color: #7fc9c5;
+}
+
+.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  box-shadow: 0 3px 8px #41b9bc33;
+}
+
+.primary:hover {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+.hero {
+  border-color: #c5e9e4;
+  background: linear-gradient(135deg, #dcf5f1, #f5fffd);
+}
+
+.panel,
+.job,
+.empty {
+  border-color: #c5e9e4;
+}
+
+.job:hover {
+  border-color: #7fc9c5;
+}
+
+input,
+select,
+textarea {
+  border-color: #b9ddd8;
+  color: #17212a;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #7fc9c5;
+}
+
+.job-status-select {
+  background: #e3f7f4;
+  border-color: #a9ded9;
+  color: #14666a;
+}
+
+.status {
+  background: #e3f7f4;
+}

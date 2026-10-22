@@ -22,6 +22,7 @@ WEB_FILE = BASE_DIR / "web" / "index.html"
 VERIFY_EMAIL_FILE = BASE_DIR / "web" / "verify-email.html"
 FORGOT_PASSWORD_FILE = BASE_DIR / "web" / "forgot-password.html"
 RESET_PASSWORD_FILE = BASE_DIR / "web" / "reset-password.html"
+MINT_THEME_FILE = BASE_DIR / "web" / "mint-theme.css"
 
 
 @asynccontextmanager
@@ -91,7 +92,7 @@ def website_response() -> FileResponse:
     )
 
 
-def page_response(path: Path, missing_message: str) -> FileResponse:
+def page_response(path: Path, missing_message: str, media_type: str = "text/html") -> FileResponse:
     if not path.is_file():
         raise HTTPException(
             status_code=500,
@@ -100,7 +101,7 @@ def page_response(path: Path, missing_message: str) -> FileResponse:
 
     return FileResponse(
         path,
-        media_type="text/html",
+        media_type=media_type,
     )
 
 
@@ -146,6 +147,15 @@ def reset_password_page():
     return page_response(
         RESET_PASSWORD_FILE,
         "Reset-password page missing: create web/reset-password.html.",
+    )
+
+
+@app.get("/mint-theme.css", include_in_schema=False)
+def mint_theme_stylesheet():
+    return page_response(
+        MINT_THEME_FILE,
+        "Mint theme missing: create web/mint-theme.css.",
+        media_type="text/css",
     )
 
 
