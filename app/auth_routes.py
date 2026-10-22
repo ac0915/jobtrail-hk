@@ -9,7 +9,7 @@ from typing import Deque, Dict, Tuple
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from psycopg import errors
 from psycopg_pool import ConnectionPool
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.accounts import authenticate_user, create_session, create_user, resolve_session, revoke_session
 from app.database import get_pool
@@ -25,23 +25,23 @@ ATTEMPT_WINDOW_SECONDS = 900
 
 class RegisterRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    email: str = Field(min_length=3, max_length=254)
+    email: EmailStr = Field(min_length=3, max_length=254)
     password: str = Field(min_length=8, max_length=20)
 
     @field_validator("email")
     @classmethod
-    def strip_email(cls, value: str) -> str:
+    def strip_email(cls, value: EmailStr) -> EmailStr:
         return value.strip()
 
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    email: str = Field(min_length=3, max_length=254)
+    email: EmailStr = Field(min_length=3, max_length=254)
     password: str = Field(min_length=1, max_length=256)
 
     @field_validator("email")
     @classmethod
-    def strip_email(cls, value: str) -> str:
+    def strip_email(cls, value: EmailStr) -> EmailStr:
         return value.strip()
 
 
@@ -78,7 +78,7 @@ def _clear_attempts(request: Request, action: str) -> None:
 def _json_body_size(request: Request) -> None:
     declared = request.headers.get("content-length")
     if declared and declared.isdigit() and int(declared) > MAX_BODY_BYTES:
-        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Request body too large.")
+        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Request body too large.")
 
 
 def _pool() -> ConnectionPool:

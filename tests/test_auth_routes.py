@@ -6,7 +6,15 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from psycopg import errors
 
-from app.auth_routes import CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE, router
+from app.auth_routes import CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE, _attempts, router
+from app.auth_security import hash_password
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limits():
+    _attempts.clear()
+    yield
+    _attempts.clear()
 
 
 @pytest.fixture()
@@ -61,7 +69,12 @@ def test_register_duplicate_email_returns_409(app_and_pool, client):
 
 def test_login_success_and_generic_failure(app_and_pool, client):
     _, conn, _ = app_and_pool
-    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com", "hash", True)
+    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+        2,
+        "friend@example.com",
+        hash_password("password123"),
+        True,
+    )
     response = client.post("/auth/login", json={"email": "friend@example.com", "password": "password123"})
     assert response.status_code == 200
     assert SESSION_COOKIE in response.cookies
@@ -88,7 +101,8 @@ def test_logout_requires_csrf_and_clears_cookies(app_and_pool, client):
     conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com")
     client.cookies.set(SESSION_COOKIE, "A" * 43)
     client.cookies.set(CSRF_COOKIE, "csrf-token")
-    missing = client.post("/auth/logout", headers={CSRF_HEADER: "csrf-token"})
+
+    missing = client.post("/auth/logout")
     assert missing.status_code == 403
 
     response = client.post("/auth/logout", headers={CSRF_HEADER: "csrf-token"})
