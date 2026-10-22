@@ -18,3 +18,8 @@ def test_auth_success_uses_fixed_my_jobs_destination():
     assert "await api('/auth/me');signedIn();" in html
     assert "registering?'register':'login'" in html
     assert 'if(!redirecting)' in html
+
+
+def test_auth_page_links_to_forgot_password():
+    html = PAGE.read_text(encoding='utf-8')
+    assert '<a class="link" href="/forgot-password">Forgot password?</a>' in html
