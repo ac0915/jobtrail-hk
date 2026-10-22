@@ -104,6 +104,14 @@ def page_response(path: Path, missing_message: str, media_type: str = "text/html
         media_type=media_type,
     )
 
+@app.get("/login", include_in_schema=False)
+async def login_page():
+    return FileResponse("web/auth.html")
+
+
+@app.get("/register", include_in_schema=False)
+async def register_page():
+    return FileResponse("web/auth.html")
 
 @app.get("/", include_in_schema=False)
 def home_page():
