@@ -1,22 +1,30 @@
-"""Real PostgreSQL authorization tests using independent browser sessions."""
+"""Real PostgreSQL authorization and per-user URL uniqueness tests."""
 from contextlib import contextmanager
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from psycopg import connect
+from psycopg import connect, errors
 
 import app.auth_routes as auth
 import app.jobs as jobs
-from scripts.local_sandbox import DETAIL_COLUMNS
+from app.accounts import create_user
+from scripts.local_sandbox import DETAIL_COLUMNS, URL_SCOPE_MIGRATION
 
 pytestmark = pytest.mark.integration
+
+
+def apply_url_scope(db):
+    db.commit()
+    db.execute(URL_SCOPE_MIGRATION.read_text(encoding='utf-8'))
+    db.commit()
 
 
 @pytest.fixture()
 def browser_pair(db, database_url, monkeypatch):
     db.execute(DETAIL_COLUMNS)
     db.commit()
+    apply_url_scope(db)
 
     class LocalPool:
         @contextmanager
@@ -84,3 +92,44 @@ def test_unauthenticated_crud_is_rejected(browser_pair):
         assert guest.post('/jobs', json={'title': 'Guest', 'company': 'Test'}).status_code == 401
         assert guest.patch('/jobs/1', json={'notes': 'Guest'}).status_code == 401
         assert guest.delete('/jobs/1').status_code == 401
+
+
+def test_same_url_allowed_across_accounts_but_not_within_account(browser_pair):
+    first, second, _ = browser_pair
+    payload = {'title': 'Shared listing', 'company': 'Test Company', 'url': 'https://example.com/shared-job'}
+    a = first.post('/jobs', json=payload)
+    b = second.post('/jobs', json=payload)
+    assert a.status_code == b.status_code == 200
+    assert a.json()['id'] != b.json()['id']
+    for client, own_id in ((first, a.json()['id']), (second, b.json()['id'])):
+        duplicate = client.post('/jobs', json=payload)
+        assert duplicate.status_code == 409
+        assert duplicate.json()['detail']['existing_id'] == own_id
+        assert [job['id'] for job in client.get('/jobs').json()] == [own_id]
+
+
+def test_updating_to_own_duplicate_url_is_rejected(browser_pair):
+    first, _, _ = browser_pair
+    a = first.post('/jobs', json={'title': 'A', 'company': 'Test', 'url': 'https://example.com/a'})
+    b = first.post('/jobs', json={'title': 'B', 'company': 'Test', 'url': 'https://example.com/b'})
+    assert a.status_code == b.status_code == 200
+    response = first.patch('/jobs/' + str(b.json()['id']), json={'url': 'https://example.com/a'})
+    assert response.status_code == 409
+    assert response.json()['detail']['existing_id'] == a.json()['id']
+    assert first.get('/jobs/' + str(b.json()['id'])).json()['url'] == 'https://example.com/b'
+
+
+def test_database_indexes_enforce_owner_and_legacy_uniqueness(db):
+    db.execute('INSERT INTO public.jobs (title, company, url) VALUES (%s, %s, %s)', ('Legacy', 'Test', 'https://example.com/shared'))
+    db.commit()
+    apply_url_scope(db)
+    account = create_user(db, 'index@example.com', 'password123', reserved_email='owner@example.com')
+    db.execute('INSERT INTO public.jobs (title, company, url, user_id) VALUES (%s, %s, %s, %s)', ('Owned', 'Test', 'https://example.com/shared', account['id']))
+    db.commit()
+    with pytest.raises(errors.UniqueViolation):
+        db.execute('INSERT INTO public.jobs (title, company, url, user_id) VALUES (%s, %s, %s, %s)', ('Duplicate', 'Test', 'https://example.com/shared', account['id']))
+    db.rollback()
+    with pytest.raises(errors.UniqueViolation):
+        db.execute('INSERT INTO public.jobs (title, company, url) VALUES (%s, %s, %s)', ('Duplicate legacy', 'Test', 'https://example.com/shared'))
+    db.rollback()
+    assert db.execute('SELECT COUNT(*) FROM public.jobs').fetchone()[0] == 2

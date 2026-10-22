@@ -1,21 +1,23 @@
 # Disposable local browser testing
 
-Keep the normal application configuration unchanged. These scripts use the confirmed local PostgreSQL server at 127.0.0.1:5432 and prompt for its postgres password. Do not use a production password.
+Keep the normal application configuration unchanged. These scripts use the confirmed local PostgreSQL server at 127.0.0.1:5432 and prompt for its postgres password.
 
 ## Automated checks
 
-Run `python scripts/run_db_tests.py`. The integration suite now contains 15 tests, including four job-isolation tests. Tests are not considered passed until executed locally.
+Run `python scripts/run_db_tests.py`. The integration suite now contains 18 tests. New checks cover independent accounts saving the same URL, rejecting duplicates inside one account, duplicate URL edits, and database-enforced uniqueness. Passing must be confirmed locally.
 
 ## Browser sandbox
 
-Run `python scripts/run_browser_test.py` from the project directory with the virtual environment active. This creates a new randomly named database, installs the base schema, required detail columns and staged multi-user migration, and starts `main_ui:app` on 127.0.0.1:8001 without reload. It enables multi-user mode only in that child process. No .env file is edited.
+Run `python scripts/run_browser_test.py` with the virtual environment active. It creates a random temporary database, installs the base schema, detail columns, and migrations 001 and 002, then starts main_ui:app at 127.0.0.1:8001 without reload. Multi-user mode is enabled only for the child process. No .env file is edited.
 
-Open http://127.0.0.1:8001/login. Register first@example.com using a test-only password of 8–20 characters. There is no email delivery or ownership verification yet. Create a job without a URL, logout, register second@example.com, and verify that its job list is empty. Login again as the first account and verify its job remains. Use port 8001 throughout; cookies on 127.0.0.1 may also be shared with other local ports, so prefer a dedicated private browser window.
+Open http://127.0.0.1:8001/login in a dedicated private window. Register first@example.com with a test-only 8–20 character password. Registration and login should redirect to My Jobs. Manually save a job with URL https://example.com/shared-job. A second save inside this account should be rejected.
 
-Press Ctrl+C to stop the server and delete its generated database. Closing or killing the terminal abruptly can prevent cleanup and leave a disposable database behind. Do not enter real CVs or sensitive personal information.
+Logout using the sidebar. Register second@example.com. Its list should start empty and it should be able to save the same URL. Each account must see only its own job. There is no email delivery or verification yet.
 
-## Known release blockers
+Use port 8001 throughout. Cookies on 127.0.0.1 can be shared across ports. Press Ctrl+C to stop the sandbox and delete its generated database; abrupt terminal termination can prevent cleanup. Do not enter real CVs or personal records.
 
-The old global URL-unique index still prevents different users from saving the same nonblank URL. This sandbox does not change it. The browser test uses blank URLs until a reviewed per-user-index migration is added.
+## Migration safety and release blockers
 
-This is not a production release. Email verification, owner provisioning/backfill, stronger production rate limiting, and complete CSRF enforcement still need work. The tests here validate job isolation, not overall production security.
+Migration 002 is staged for reviewed multi-user cutover, not production execution now. It replaces the global URL index with per-user uniqueness plus a separate index for NULL-owner legacy rows. Existing records are not reassigned. After different users save the same URL, recreating the old global index requires data reconciliation. Disabling the feature flag is NOT a safe rollback or a supported public fallback: legacy mode has unscoped queries.
+
+Email verification, owner provisioning/backfill, stronger production rate limiting, complete CSRF enforcement, and deployment checks still need work. These tests do not certify production security.

@@ -8,6 +8,7 @@ from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
 DETAIL_COLUMNS = 'ALTER TABLE public.jobs ADD COLUMN IF NOT EXISTS description TEXT, ADD COLUMN IF NOT EXISTS cover_letter TEXT'
+URL_SCOPE_MIGRATION = ROOT / 'db/migrations/002_user_url_scope.sql'
 
 
 @contextmanager
@@ -22,6 +23,7 @@ def sandbox(password):
             conn.execute((ROOT / 'db/schema.sql').read_text(encoding='utf-8'))
             conn.execute(DETAIL_COLUMNS)
             conn.execute((ROOT / 'db/migrations/001_multi_user_expand.sql').read_text(encoding='utf-8'))
+            conn.execute(URL_SCOPE_MIGRATION.read_text(encoding='utf-8'))
         yield connection
     finally:
         with connect(**params, autocommit=True) as conn:
