@@ -44,7 +44,7 @@
     p { line-height: 1.7; }
     .muted { color: var(--muted); }
     .small { font-size: 13px; line-height: 1.5; }
-    
+
 .site-header {
   position: sticky;
   top: 0;
@@ -852,7 +852,19 @@
       background: transparent;
       font-size: 22px;
     }
+    .auth-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: clamp(16px, 3vw, 32px);
+}
 
+.auth-user {
+  color: #23468d;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
     @media (max-width: 760px) {
       .site-header { grid-template-columns: 145px minmax(0, 1fr); }
       .brand { padding: 0 16px; font-size: 20px; }
@@ -905,11 +917,13 @@
 </head>
 
 <body>
-  <header class="site-header">
-    <a class="brand" href="/">JobTrail HK</a>
-    <p id="breadcrumb" aria-label="目前位置"></p>
-     <a class="button" href="/login">Login / Register</a>z
-  </header>
+ <header class="site-header">
+  <a class="brand" href="/">JobTrail HK</a>
+  <p id="breadcrumb" aria-label="目前位置"></p>
+  <div class="auth-area" id="auth-area">
+    <a class="button" href="/login" id="login-link">Login / Register</a>
+  </div>
+</header>
 
   <div class="app">
     <aside class="sidebar">
@@ -2708,5 +2722,56 @@
     syncControls();
     if (page === "jobs") loadJobs();
   </script>
+
+  <script>
+(async function () {
+  const authArea = document.getElementById('auth-area');
+  if (!authArea) return;
+
+  const csrfToken = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('jt_csrf='))
+    ?.split('=')[1];
+
+  async function api(path, options = {}) {
+    const response = await fetch(path, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      ...options
+    });
+    if (!response.ok) throw new Error('Request failed');
+    return response.json();
+  }
+
+  function showSignedOut() {
+    authArea.innerHTML = '<a class="button" href="/login">Login / Register</a>';
+  }
+
+  function showSignedIn(email) {
+    authArea.innerHTML = `
+      <span class="auth-user">${email}</span>
+      <button class="button" id="logout-button" type="button">Logout</button>
+    `;
+    document.getElementById('logout-button').addEventListener('click', async () => {
+      try {
+        await api('/auth/logout', {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': csrfToken || '' }
+        });
+      } catch (error) {
+        // Continue to the login page even if the logout request fails.
+      }
+      window.location.href = '/login';
+    });
+  }
+
+  try {
+    const data = await api('/auth/me');
+    showSignedIn(data.user.email);
+  } catch (error) {
+    showSignedOut();
+  }
+})();
+</script>
 </body>
 </html>
