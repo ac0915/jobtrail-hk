@@ -37,7 +37,7 @@ def browser_pair(db, database_url, monkeypatch):
     monkeypatch.setattr(jobs, 'get_pool', lambda: pool)
     monkeypatch.setattr(jobs, 'MULTI_USER_ENABLED', True)
     monkeypatch.setenv('APP_ENV', 'development')
-    auth._attempts.clear()
+    auth._limiter.attempts.clear()
     app = FastAPI()
     app.include_router(auth.router)
     app.include_router(jobs.router)
@@ -46,9 +46,12 @@ def browser_pair(db, database_url, monkeypatch):
             for client, email in ((first, 'first@example.com'), (second, 'second@example.com')):
                 response = client.post('/auth/register', json={'email': email, 'password': 'password123'})
                 assert response.status_code == 201
+                csrf_token = response.cookies.get(auth.CSRF_COOKIE)
+                assert csrf_token
+                client.headers.update({auth.CSRF_HEADER: csrf_token})
             yield first, second, app
     finally:
-        auth._attempts.clear()
+        auth._limiter.attempts.clear()
 
 
 def save(client, title):
