@@ -13,6 +13,14 @@ def user(db):
     return result
 
 
+def session_account(account):
+    return {
+        'id': account['id'],
+        'email': account['email'],
+        'email_verified': False,
+    }
+
+
 def expire(db, token):
     db.execute(
         "UPDATE public.jt_sessions SET created_at = NOW() - INTERVAL '2 hours', expires_at = NOW() - INTERVAL '1 hour' WHERE token_hash = %s",
@@ -27,7 +35,7 @@ def test_register_login_and_session_round_trip(db):
     assert authenticate_user(db, ' FRIEND@EXAMPLE.COM ', 'password123') == account
     token = create_session(db, account['id'])
     db.commit()
-    assert resolve_session(db, token) == account
+    assert resolve_session(db, token) == session_account(account)
     row = db.execute('SELECT token_hash FROM public.jt_sessions').fetchone()
     assert row[0] == session_token_hash(token)
     assert row[0] != token
@@ -67,7 +75,7 @@ def test_logout_and_expiry_cleanup(db):
     expire(db, expired)
     delete_expired_sessions(db)
     db.commit()
-    assert resolve_session(db, active) == account
+    assert resolve_session(db, active) == session_account(account)
     assert resolve_session(db, expired) is None
     revoke_session(db, active)
     db.commit()

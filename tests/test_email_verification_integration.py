@@ -1,6 +1,5 @@
 """PostgreSQL tests for email verification tokens and API behavior."""
 from contextlib import contextmanager
-from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -34,7 +33,6 @@ def verification_app(db, database_url, monkeypatch):
 
     monkeypatch.setattr(auth, '_pool', lambda: pool)
     monkeypatch.setattr(auth, 'send_verification_email', capture_email)
-    monkeypatch.setattr(auth, 'MULTI_USER_ENABLED', True)
     monkeypatch.setenv('APP_ENV', 'development')
     auth._limiter.attempts.clear()
 
