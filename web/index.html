@@ -44,18 +44,24 @@
     p { line-height: 1.7; }
     .muted { color: var(--muted); }
     .small { font-size: 13px; line-height: 1.5; }
+    
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--header-height);
+  background: #dce7fa;
+  border-bottom: 3px solid var(--blue);
+  box-shadow: 0 3px 12px #1e365e0f;
+}
 
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: grid;
-      grid-template-columns: 250px minmax(0, 1fr);
-      height: var(--header-height);
-      background: #dce7fa;
-      border-bottom: 3px solid var(--blue);
-      box-shadow: 0 3px 12px #1e365e0f;
-    }
+#breadcrumb {
+  flex: 1;
+}
 
     .brand {
       display: flex;
@@ -902,7 +908,7 @@
   <header class="site-header">
     <a class="brand" href="/">JobTrail HK</a>
     <p id="breadcrumb" aria-label="目前位置"></p>
-     <a class="button" href="/login">Login / Register</a>
+     <a class="button" href="/login">Login / Register</a>z
   </header>
 
   <div class="app">
