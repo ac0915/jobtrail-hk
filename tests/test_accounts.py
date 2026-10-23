@@ -1,5 +1,6 @@
 """Mock-based storage tests. PostgreSQL integration is still required."""
 import unittest
+from datetime import datetime, timezone
 from unittest.mock import MagicMock
 from app.accounts import normalize_email, create_user, authenticate_user, create_session, resolve_session, revoke_session, delete_expired_sessions
 from app.auth_security import hash_password, session_token_hash, new_session_token
@@ -37,10 +38,13 @@ class AccountStorageTests(unittest.TestCase):
 
     def test_authentication_and_disabled_account(self):
         encoded = hash_password("password123")
-        conn, cur = self.connection((2, "friend@example.com", encoded, True))
-        self.assertEqual(authenticate_user(conn, "friend@example.com", "password123"), {"id": 2, "email": "friend@example.com"})
+        verified_at = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        conn, cur = self.connection((2, "friend@example.com", encoded, True, verified_at))
+        self.assertEqual(authenticate_user(conn, "friend@example.com", "password123"), {"id": 2, "email": "friend@example.com", "email_verified": True})
         self.assertIsNone(authenticate_user(conn, "friend@example.com", "incorrect123"))
-        cur.fetchone.return_value = (2, "friend@example.com", encoded, False)
+        cur.fetchone.return_value = (2, "friend@example.com", encoded, True, None)
+        self.assertEqual(authenticate_user(conn, "friend@example.com", "password123"), {"id": 2, "email": "friend@example.com", "email_verified": False})
+        cur.fetchone.return_value = (2, "friend@example.com", encoded, False, verified_at)
         self.assertIsNone(authenticate_user(conn, "friend@example.com", "password123"))
         cur.fetchone.return_value = None
         self.assertIsNone(authenticate_user(conn, "missing@example.com", "password123"))

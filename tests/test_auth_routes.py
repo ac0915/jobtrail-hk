@@ -1,4 +1,5 @@
-"""FastAPI TestClient tests for staged authentication routes."""
+"""FastAPI TestClient tests for authentication routes."""
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,7 +12,8 @@ from app.auth_security import hash_password
 
 
 @pytest.fixture(autouse=True)
-def reset_rate_limits():
+def reset_rate_limits(monkeypatch):
+    monkeypatch.setenv('APP_ENV', 'development')
     _attempts.clear()
     yield
     _attempts.clear()
@@ -38,21 +40,23 @@ def register_response(client, email="friend@example.com", password="password123"
     return client.post("/auth/register", json={"email": email, "password": password})
 
 
-def test_register_creates_account_and_sets_secure_cookies(app_and_pool, client):
+def test_register_creates_account_and_sends_verification_without_session(app_and_pool, client):
     _, conn, _ = app_and_pool
     conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com")
-    with patch("app.auth_routes.send_verification_email") as send_email:
+    with patch("app.auth_routes.send_verification_email", return_value={'delivered': True, 'provider': 'test'}) as send_email:
         response = register_response(client)
     assert response.status_code == 201
-    assert response.json() == {"message": "Account created", "user": {"id": 2, "email": "friend@example.com"}}
-    assert response.cookies.get(SESSION_COOKIE)
-    assert response.cookies.get(CSRF_COOKIE)
-    set_cookie = response.headers["set-cookie"]
-    assert "HttpOnly" in set_cookie
-    assert "SameSite=lax" in set_cookie
-    assert "Secure" not in set_cookie
+    assert response.json() == {"message": "Account created. Check your email and click the verification link.", "user": {"id": 2, "email": "friend@example.com"}}
+    assert not response.cookies.get(SESSION_COOKIE)
+    assert not response.cookies.get(CSRF_COOKIE)
+    assert not client.cookies.get(SESSION_COOKIE)
+    assert not client.cookies.get(CSRF_COOKIE)
+    assert 'set-cookie' not in response.headers
     assert conn.commit.call_count == 2
     send_email.assert_called_once()
+    recipient, token = send_email.call_args.args
+    assert recipient == 'friend@example.com'
+    assert isinstance(token, str) and len(token) >= 32
 
 
 def test_register_rejects_short_password_and_invalid_email(client):
@@ -69,37 +73,73 @@ def test_register_duplicate_email_returns_409(app_and_pool, client):
     assert response.json()["detail"] == "An account with this email already exists."
 
 
+def set_verified_login_rows(conn):
+    cur = conn.cursor.return_value.__enter__.return_value
+    cur.fetchone.side_effect = [
+        (2, 'friend@example.com', hash_password('password123'), True, datetime(2026, 1, 1, tzinfo=timezone.utc)),
+        (2,),
+    ]
+    return cur
+
+
 def test_login_success_and_generic_failure(app_and_pool, client):
     _, conn, _ = app_and_pool
-    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (
-        2,
-        "friend@example.com",
-        hash_password("password123"),
-        True,
-    )
+    cur = set_verified_login_rows(conn)
     response = client.post("/auth/login", json={"email": "friend@example.com", "password": "password123"})
     assert response.status_code == 200
-    assert SESSION_COOKIE in response.cookies
-
-    conn.cursor.return_value.__enter__.return_value.fetchone.return_value = None
+    assert response.cookies.get(SESSION_COOKIE)
+    assert response.cookies.get(CSRF_COOKIE)
+    cookies = response.headers.get_list('set-cookie')
+    session_cookie = next(value for value in cookies if value.startswith(SESSION_COOKIE + '='))
+    csrf_cookie = next(value for value in cookies if value.startswith(CSRF_COOKIE + '='))
+    assert 'HttpOnly' in session_cookie
+    assert 'HttpOnly' not in csrf_cookie
+    assert all('SameSite=lax' in value for value in cookies)
+    assert all('Secure' not in value for value in cookies)
+    cur.fetchone.side_effect = None
+    cur.fetchone.return_value = None
     failed = client.post("/auth/login", json={"email": "friend@example.com", "password": "wrongpass1"})
     assert failed.status_code == 401
     assert failed.json()["detail"] == "Invalid email or password."
 
 
+def test_login_rejects_unverified_account_without_session(app_and_pool, client):
+    _, conn, _ = app_and_pool
+    cur = conn.cursor.return_value.__enter__.return_value
+    cur.fetchone.return_value = (2, 'friend@example.com', hash_password('password123'), True, None)
+    response = client.post('/auth/login', json={'email': 'friend@example.com', 'password': 'password123'})
+    assert response.status_code == 403
+    assert response.json()['detail'] == 'Please verify your email address before signing in.'
+    assert 'set-cookie' not in response.headers
+    cur.fetchone.assert_called_once()
+    assert not any('INSERT INTO public.jt_sessions' in call.args[0] for call in cur.execute.call_args_list)
+    conn.commit.assert_not_called()
+
+
+def test_production_login_sets_secure_cookies(app_and_pool, client, monkeypatch):
+    monkeypatch.setenv('APP_ENV', 'production')
+    _, conn, _ = app_and_pool
+    set_verified_login_rows(conn)
+    response = client.post('/auth/login', json={'email': 'friend@example.com', 'password': 'password123'})
+    assert response.status_code == 200
+    assert response.cookies.get(SESSION_COOKIE)
+    assert response.cookies.get(CSRF_COOKIE)
+    cookies = response.headers.get_list('set-cookie')
+    assert len(cookies) == 2
+    assert all('Secure' in value for value in cookies)
+    assert all('SameSite=lax' in value for value in cookies)
+    assert any(value.startswith(SESSION_COOKIE + '=') and 'HttpOnly' in value for value in cookies)
+    assert any(value.startswith(CSRF_COOKIE + '=') and 'HttpOnly' not in value for value in cookies)
+
+
 def test_me_requires_session(app_and_pool, client):
     _, conn, _ = app_and_pool
     assert client.get("/auth/me").status_code == 401
-
     conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com", None)
     client.cookies.set(SESSION_COOKIE, "A" * 43)
     response = client.get("/auth/me")
     assert response.status_code == 200
-    assert response.json()["user"] == {
-        "id": 2,
-        "email": "friend@example.com",
-        "email_verified": False,
-    }
+    assert response.json()["user"] == {"id": 2, "email": "friend@example.com", "email_verified": False}
 
 
 def test_logout_requires_csrf_and_clears_cookies(app_and_pool, client):
@@ -107,10 +147,8 @@ def test_logout_requires_csrf_and_clears_cookies(app_and_pool, client):
     conn.cursor.return_value.__enter__.return_value.fetchone.return_value = (2, "friend@example.com", None)
     client.cookies.set(SESSION_COOKIE, "A" * 43)
     client.cookies.set(CSRF_COOKIE, "csrf-token")
-
     missing = client.post("/auth/logout")
     assert missing.status_code == 403
-
     response = client.post("/auth/logout", headers={CSRF_HEADER: "csrf-token"})
     assert response.status_code == 200
     set_cookie = response.headers["set-cookie"]
@@ -130,9 +168,5 @@ def test_rate_limit_blocks_sixth_login_attempt(app_and_pool, client):
 
 
 def test_oversized_request_is_rejected(client):
-    response = client.post(
-        "/auth/register",
-        json={"email": "friend@example.com", "password": "password123"},
-        headers={"Content-Length": "5000"},
-    )
+    response = client.post("/auth/register", json={"email": "friend@example.com", "password": "password123"}, headers={"Content-Length": "5000"})
     assert response.status_code == 413
