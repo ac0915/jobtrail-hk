@@ -1512,9 +1512,33 @@
       let response;
 
       try {
+        const headers = new Headers(options.headers || {});
+        headers.set("Accept", "application/json");
+
+        const method = (options.method || "GET").toUpperCase();
+        const target = new URL(url, window.location.href);
+
+        if (
+          target.origin === window.location.origin &&
+          !["GET", "HEAD", "OPTIONS"].includes(method)
+        ) {
+          const csrfCookie = document.cookie
+            .split(";")
+            .map(value => value.trim())
+            .find(value => value.startsWith("jt_csrf="));
+
+          if (csrfCookie) {
+            headers.set(
+              "X-CSRF-Token",
+              decodeURIComponent(csrfCookie.slice("jt_csrf=".length))
+            );
+          }
+        }
+
         response = await fetch(url, {
           ...options,
-          headers: { Accept: "application/json", ...(options.headers || {}) }
+          credentials: "same-origin",
+          headers
         });
       } catch (error) {
         if (error.name === "AbortError") throw error;
