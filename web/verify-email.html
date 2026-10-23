@@ -41,13 +41,12 @@
 </head>
 <body>
   <main class="card">
-    <a class="brand" href="/">JobTrail HK</a>
+    <a class="brand" href="/login">JobTrail HK</a>
     <h1>Verify your email</h1>
-    <p>We are confirming your email address. This should only take a moment.</p>
+    <p>We are confirming your email address. Once verified, please sign in to continue.</p>
     <div id="verification-status" class="status" role="status" aria-live="polite">Checking your verification link…</div>
     <div class="actions">
-      <a class="button primary" href="/profile/my-jobs">Go to My Jobs</a>
-      <a class="button" href="/">Find Jobs</a>
+      <a class="button primary" href="/login">Go to Login</a>
     </div>
   </main>
 
@@ -71,7 +70,10 @@
           const data = await response.json().catch(function () { return {}; });
           if (response.ok) {
             status.className = 'status success';
-            status.textContent = data.message || 'Email verified successfully.';
+            status.textContent = 'Email verified successfully. Please sign in. Redirecting to login…';
+            window.setTimeout(function () {
+              window.location.replace('/login');
+            }, 1500);
           } else {
             status.className = 'status error';
             status.textContent = data.detail || 'This verification link is invalid or has expired.';
