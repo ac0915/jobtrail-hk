@@ -37,12 +37,12 @@ def authenticate_user(conn, email, password):
         verify_password(password, _DUMMY_HASH)
         return None
     with conn.cursor() as cur:
-        cur.execute("SELECT id, email, password_hash, is_active FROM public.jt_users WHERE email = %s", (email,))
+        cur.execute("SELECT id, email, password_hash, is_active, email_verified_at FROM public.jt_users WHERE email = %s", (email,))
         row = cur.fetchone()
     valid = verify_password(password, row[2] if row else _DUMMY_HASH)
     if not row or not valid or not row[3]:
         return None
-    return {"id": row[0], "email": row[1]}
+    return {"id": row[0], "email": row[1], "email_verified": row[4] is not None}
 
 
 def create_session(conn, user_id):
