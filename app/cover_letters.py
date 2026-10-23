@@ -8,7 +8,7 @@ from pathlib import Path
 from zipfile import BadZipFile, ZipFile
 
 from docx import Document
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from pypdf import PdfReader
 from starlette.concurrency import run_in_threadpool
 
@@ -21,6 +21,16 @@ MAX_PDF_PAGES = 20
 MAX_DOCX_EXPANDED_BYTES = 20 * 1024 * 1024
 
 EXTRACT_LIMIT = asyncio.Semaphore(2)
+
+
+def require_extract_access(request: Request) -> None:
+    # Read the shared flag at request time to avoid a router import cycle.
+    from app import jobs
+    from app.auth_routes import _require_csrf, current_user
+
+    if jobs.MULTI_USER_ENABLED:
+        current_user(request)
+        _require_csrf(request)
 
 
 def clean_letter_text(value: str) -> str:
@@ -142,7 +152,7 @@ def extract_letter(data: bytes, extension: str) -> str:
     return text
 
 
-@router.post("/cover-letter/extract")
+@router.post("/cover-letter/extract", dependencies=[Depends(require_extract_access)])
 async def extract_cover_letter(
     file: UploadFile = File(...),
 ):

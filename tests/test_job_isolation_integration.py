@@ -37,6 +37,13 @@ def browser_pair(db, database_url, monkeypatch):
     monkeypatch.setattr(jobs, 'get_pool', lambda: pool)
     monkeypatch.setattr(jobs, 'MULTI_USER_ENABLED', True)
     monkeypatch.setenv('APP_ENV', 'development')
+    verification_tokens = {}
+
+    def capture_verification(email, token):
+        verification_tokens[email] = token
+        return {'delivered': True, 'provider': 'test'}
+
+    monkeypatch.setattr(auth, 'send_verification_email', capture_verification)
     auth._limiter.attempts.clear()
     app = FastAPI()
     app.include_router(auth.router)
@@ -44,9 +51,20 @@ def browser_pair(db, database_url, monkeypatch):
     try:
         with TestClient(app) as first, TestClient(app) as second:
             for client, email in ((first, 'first@example.com'), (second, 'second@example.com')):
-                response = client.post('/auth/register', json={'email': email, 'password': 'password123'})
+                credentials = {'email': email, 'password': 'password123'}
+                response = client.post('/auth/register', json=credentials)
                 assert response.status_code == 201
-                csrf_token = response.cookies.get(auth.CSRF_COOKIE)
+                assert not client.cookies.get(auth.SESSION_COOKIE)
+                assert not client.cookies.get(auth.CSRF_COOKIE)
+                assert client.get('/jobs').status_code == 401
+                assert client.post('/auth/login', json=credentials).status_code == 403
+                assert email in verification_tokens
+                verified = client.post('/auth/verify-email', json={'token': verification_tokens[email]})
+                assert verified.status_code == 200
+                response = client.post('/auth/login', json=credentials)
+                assert response.status_code == 200
+                assert client.cookies.get(auth.SESSION_COOKIE)
+                csrf_token = client.cookies.get(auth.CSRF_COOKIE)
                 assert csrf_token
                 client.headers.update({auth.CSRF_HEADER: csrf_token})
             yield first, second, app
