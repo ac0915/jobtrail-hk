@@ -14,25 +14,18 @@ def user(db):
 
 
 def session_account(account):
-    return {
-        'id': account['id'],
-        'email': account['email'],
-        'email_verified': False,
-    }
+    return {'id': account['id'], 'email': account['email'], 'email_verified': False}
 
 
 def expire(db, token):
-    db.execute(
-        "UPDATE public.jt_sessions SET created_at = NOW() - INTERVAL '2 hours', expires_at = NOW() - INTERVAL '1 hour' WHERE token_hash = %s",
-        (session_token_hash(token),),
-    )
+    db.execute("UPDATE public.jt_sessions SET created_at = NOW() - INTERVAL '2 hours', expires_at = NOW() - INTERVAL '1 hour' WHERE token_hash = %s", (session_token_hash(token),))
     db.commit()
 
 
 def test_register_login_and_session_round_trip(db):
     account = user(db)
     assert account['email'] == 'friend@example.com'
-    assert authenticate_user(db, ' FRIEND@EXAMPLE.COM ', 'password123') == account
+    assert authenticate_user(db, ' FRIEND@EXAMPLE.COM ', 'password123') == session_account(account)
     token = create_session(db, account['id'])
     db.commit()
     assert resolve_session(db, token) == session_account(account)
