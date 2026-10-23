@@ -53,6 +53,16 @@ class VerifyEmailRequest(BaseModel):
     token: str = Field(min_length=32, max_length=128)
 
 
+class ResendVerificationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: EmailStr = Field(min_length=3, max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def strip_email(cls, value: EmailStr) -> EmailStr:
+        return value.strip()
+
+
 class ForgotPasswordRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     email: EmailStr = Field(min_length=3, max_length=254)
@@ -109,11 +119,12 @@ def _issue_session(response: Response, conn, user_id: int) -> None:
     response.set_cookie(CSRF_COOKIE, csrf, max_age=12 * 60 * 60, httponly=False, secure=secure, samesite="lax", path="/")
 
 
-def _send_email(message, email: str, raw_token: str) -> None:
+def _send_email(message, email: str, raw_token: str) -> dict:
     try:
-        message(email, raw_token)
+        return message(email, raw_token)
     except Exception:
         logger.exception("Could not send email to %s.", email)
+        return {"delivered": False, "provider": "error"}
 
 
 def _require_csrf(request: Request) -> None:
@@ -151,12 +162,16 @@ def register(payload: RegisterRequest, request: Request, response: Response):
             conn.commit()
             raw_token = create_verification_token(conn, user["id"])
             conn.commit()
-            _send_email(send_verification_email, user["email"], raw_token)
+            delivery = _send_email(send_verification_email, user["email"], raw_token)
     except ValueError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
     except errors.UniqueViolation as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, "An account with this email already exists.") from exc
-    return {"message": "Account created. Check your email to verify your account.", "user": {"id": user["id"], "email": user["email"]}}
+    if delivery.get("delivered"):
+        message_text = "Account created. Check your email and click the verification link."
+    else:
+        message_text = "Account created, but the verification email could not be sent. Please contact support."
+    return {"message": message_text, "user": {"id": user["id"], "email": user["email"]}}
 
 
 @router.post("/login")
@@ -198,17 +213,21 @@ def verify_email(payload: VerifyEmailRequest, request: Request):
 
 
 @router.post("/resend-verification")
-def resend_verification(request: Request, user: AuthUser = Depends(current_user)):
+def resend_verification(payload: ResendVerificationRequest, request: Request):
     _json_body_size(request)
     _rate_limit(request, "resend_verification")
-    _require_csrf(request)
-    if user.email_verified:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This email address is already verified.")
     with _pool().connection(timeout=30) as conn:
-        raw_token = create_verification_token(conn, user.id)
-        conn.commit()
-        _send_email(send_verification_email, user.email, raw_token)
-    return {"message": "Verification email sent"}
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, email, email_verified FROM public.jt_users WHERE email = %s",
+                (payload.email,),
+            )
+            user = cur.fetchone()
+            if user is not None and not user["email_verified"]:
+                raw_token = create_verification_token(conn, user["id"])
+                conn.commit()
+                _send_email(send_verification_email, user["email"], raw_token)
+    return {"message": "If that email has an unverified account, a verification link has been sent."}
 
 
 @router.post("/forgot-password")

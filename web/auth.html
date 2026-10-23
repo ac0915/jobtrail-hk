@@ -18,6 +18,7 @@
 <div id="confirm-field" class="field" hidden><label for="confirm">Confirm password</label><input id="confirm" type="password" autocomplete="new-password" maxlength="20"></div>
 <button id="submit" class="primary" type="submit" disabled>Login</button>
 <p class="switch"><span id="switch-copy">No account yet?</span> <button id="switch" class="link" type="button">Register</button> <a class="link" href="/forgot-password">Forgot password?</a></p>
+<p class="switch"><button id="resend" class="link" type="button" hidden>Resend verification email</button></p>
 </form>
 <p id="message" class="message" role="status" aria-live="polite"></p>
 </main>
@@ -36,7 +37,7 @@ function setMode(){
  $('password-hint').hidden=!registering;
  $('password').minLength=registering?8:1;$('password').maxLength=registering?20:256;
  $('password').autocomplete=registering?'new-password':'current-password';
- $('password').value='';$('confirm').value='';message('');
+ $('password').value='';$('confirm').value='';message('');$('resend').hidden=true;
 }
 function signedIn(){
  redirecting=true;busy=true;
@@ -58,14 +59,26 @@ document.querySelector('.toggle').addEventListener('click',event=>{
  const show=$('password').type==='password';$('password').type=show?'text':'password';
  event.currentTarget.textContent=show?'Hide':'Show';event.currentTarget.setAttribute('aria-pressed',String(show));
 });
+$('resend').addEventListener('click',async()=>{
+ if(busy)return;
+ busy=true;$('resend').disabled=true;message('Please wait…');
+ try{
+  const data=await api('/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim()})});
+  message(data.message);$('resend').hidden=true;
+ }catch(error){message(error.message);}
+ finally{busy=false;$('resend').disabled=false;}
+});
 $('auth-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!enabled||busy)return;
  if(registering&&$('password').value!==$('confirm').value){message('Passwords do not match.');$('confirm').focus();return;}
  busy=true;$('submit').disabled=true;$('switch').disabled=true;message('Please wait…');
  try{await api('/auth/'+(registering?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});
-  if(registering){message('Account created. Check your email and click the verification link.');registering=false;setMode();}
+  if(registering){registering=false;setMode();message('Account created. Check your email and click the verification link.');}
   else{signedIn();}}
- catch(error){message(error.message);}
+ catch(error){
+  message(error.message);
+  $('resend').hidden=!(error.status===403&&error.message.includes('verify your email'));
+ }
  finally{if(!redirecting){busy=false;$('submit').disabled=!enabled;$('switch').disabled=false;}}
 });
 (async()=>{
