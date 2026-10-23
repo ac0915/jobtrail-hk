@@ -8,7 +8,7 @@ from psycopg import errors
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-from app.accounts import authenticate_user, create_session, create_user, resolve_session, revoke_session
+from app.accounts import authenticate_user, create_session, create_user, normalize_email, resolve_session, revoke_session
 from app.auth_limits import AttemptLimiter, RateLimited
 from app.database import get_pool
 from app.email import send_password_reset_email, send_verification_email
@@ -162,11 +162,11 @@ def register(payload: RegisterRequest, request: Request, response: Response):
             conn.commit()
             raw_token = create_verification_token(conn, user["id"])
             conn.commit()
-            delivery = _send_email(send_verification_email, user["email"], raw_token)
     except ValueError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
     except errors.UniqueViolation as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, "An account with this email already exists.") from exc
+    delivery = _send_email(send_verification_email, user["email"], raw_token)
     if delivery.get("delivered"):
         message_text = "Account created. Check your email and click the verification link."
     else:
@@ -216,30 +216,44 @@ def verify_email(payload: VerifyEmailRequest, request: Request):
 def resend_verification(payload: ResendVerificationRequest, request: Request):
     _json_body_size(request)
     _rate_limit(request, "resend_verification")
+    message = {"message": "If that email has an unverified account, a verification link has been sent."}
+    try:
+        email = normalize_email(payload.email)
+    except ValueError:
+        return message
+    raw_token = None
+    recipient = None
     with _pool().connection(timeout=30) as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT id, email, email_verified FROM public.jt_users WHERE email = %s",
-                (payload.email,),
+                "SELECT id, email, email_verified_at FROM public.jt_users WHERE email = %s AND is_active",
+                (email,),
             )
             user = cur.fetchone()
-            if user is not None and not user["email_verified"]:
-                raw_token = create_verification_token(conn, user["id"])
-                conn.commit()
-                _send_email(send_verification_email, user["email"], raw_token)
-    return {"message": "If that email has an unverified account, a verification link has been sent."}
+        if user is not None and user[2] is None:
+            raw_token = create_verification_token(conn, user[0])
+            recipient = user[1]
+            conn.commit()
+    if raw_token is not None:
+        _send_email(send_verification_email, recipient, raw_token)
+    return message
 
 
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, request: Request):
     _json_body_size(request)
     _rate_limit(request, "forgot_password")
+    message = {"message": "If that email has an account, a reset link has been sent."}
+    try:
+        email = normalize_email(payload.email)
+    except ValueError:
+        return message
     with _pool().connection(timeout=30) as conn:
-        raw_token = create_password_reset_token(conn, payload.email)
+        raw_token = create_password_reset_token(conn, email)
         conn.commit()
-        if raw_token is not None:
-            _send_email(send_password_reset_email, payload.email, raw_token)
-    return {"message": "If that email has an account, a reset link has been sent."}
+    if raw_token is not None:
+        _send_email(send_password_reset_email, email, raw_token)
+    return message
 
 
 @router.post("/reset-password")

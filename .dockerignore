@@ -1,6 +1,15 @@
 .git
 .gitignore
 .env
+.env.*
+credentials.json
+client_secret*.json
+token.json
+gmail_token.json
+**/credentials.json
+**/client_secret*.json
+**/token.json
+**/gmail_token.json
 *.db
 *.sqlite
 *.sqlite3

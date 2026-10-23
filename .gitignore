@@ -9,6 +9,14 @@ venv/
 
 # Environment variables
 .env
+.env.*
+!.env.example
+
+# OAuth credentials and tokens
+credentials.json
+client_secret*.json
+token.json
+gmail_token.json
 
 # VS Code
 .vscode/
