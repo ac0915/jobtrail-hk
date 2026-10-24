@@ -142,3 +142,49 @@ textarea:focus-visible, [role=button]:focus-visible { outline-color: #8dceae !im
   .nav a { flex: 0 0 auto; font-size: 14px !important; padding: 11px 13px !important; }
   #jobs { grid-template-columns: 1fr !important; }
 }
+
+/* Larger workspace typography. Extra specificity intentionally wins over
+   later inline stylesheet blocks without replacing the workspace HTML. */
+html body { font-size: 16px !important; line-height: 1.7; }
+html body button, html body input, html body select,
+html body textarea, html body label { font-size: 15px !important; }
+html body .brand { font-size: 24px !important; }
+html body .nav a { font-size: 17px !important; }
+html body .auth-user, html body .auth-area .button,
+html body .auth-area button { font-size: 17px !important; }
+html body #jt-language, html body .jt-language-select { font-size: 15px !important; }
+html body .heading-copy h1 { font-size: 31px !important; }
+html body .heading-copy p, html body .jt-list-heading p { font-size: 14px !important; }
+html body .jt-list-heading h2 { font-size: 20px !important; }
+html body .jt-eyebrow { font-size: 12px !important; }
+html body .jt-stat span { font-size: 14px !important; }
+html body .jt-stat strong { font-size: 39px !important; }
+html body .jt-stat small { font-size: 12px !important; }
+html body .jt-tip b { font-size: 15px !important; }
+html body .jt-tip p { font-size: 14px !important; }
+html body .toolbar input, html body .toolbar select,
+html body .toolbar button { font-size: 14px !important; }
+html body #list-summary, html body .jt-legend { font-size: 13px !important; }
+html body .job h2, html body .job .job-title {
+  font-size: 21px !important; line-height: 1.45 !important;
+}
+html body .job .company { font-size: 15px !important; }
+html body .jt-salary { font-size: 19px !important; }
+html body .jt-salary.missing, html body .jt-location { font-size: 14px !important; }
+html body .job .job-status-select { font-size: 13px !important; max-width: 150px !important; }
+html body .jt-notes small { font-size: 12px !important; }
+html body .jt-notes p { font-size: 14px !important; line-height: 1.8 !important; }
+html body .jt-attachments, html body .jt-extra summary,
+html body .jt-extra .meta { font-size: 13px !important; }
+html body .job .actions button, html body .job .actions .button,
+html body .job-status-message { font-size: 13px !important; }
+html body dialog h2 { font-size: 25px !important; }
+html body dialog label, html body dialog input, html body dialog select,
+html body dialog textarea, html body dialog button,
+html body .modal-tabs button, html body .modes button { font-size: 15px !important; }
+html body .pre, html body .editor-note, html body .source-status,
+html body .detail-meta, html body .status, html body #letter-editor-message {
+  font-size: 15px !important; line-height: 1.85 !important;
+}
+html body #letter-editor-text { font-size: 18px !important; line-height: 1.9 !important; }
+html body .jt-mobile-help { font-size: 12px !important; }
