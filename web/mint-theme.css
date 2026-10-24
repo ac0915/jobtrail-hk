@@ -1,109 +1,144 @@
-/* Mint theme overlay for the main JobTrail interface. */
+/* Approved workspace theme. Important declarations override the legacy
+   inline stylesheet, which is currently loaded after this file.
+   Presentation only: no API, session, database, or form changes. */
 :root {
-  --blue: #41b9bc;
-  --blue-dark: #2d9295;
-  --muted: #657671;
-  color: #17212a;
-  background: #f5fffd;
+  --blue: #147d70 !important;
+  --blue-dark: #10685c !important;
+  --muted: #718278 !important;
+  --header-height: 82px !important;
+  color: #203a32 !important;
+  background: #fbfdfb !important;
 }
-
-body,
-main {
-  background: #f5fffd;
-}
-
+body, main { background: #fbfdfb !important; color: #203a32 !important; }
+a { color: #147d70; }
+h1, h2 { color: #203a32 !important; }
 .site-header {
-  background: #e3f7f4;
-  border-bottom-color: var(--blue);
-  box-shadow: 0 3px 12px #163a3210;
+  background: #fff !important;
+  border-bottom: 1px solid #dfeae3 !important;
+  box-shadow: none !important;
 }
-
-.brand {
-  color: #1d6367;
-}
-
-#breadcrumb {
-  color: #5d7370;
-}
-
+.brand { color: #203a32 !important; font-size: 22px !important; }
+#breadcrumb { color: #819486 !important; font-size: 12px !important; }
+.app { grid-template-columns: 220px minmax(0, 1fr) !important; }
 .sidebar {
-  background: white;
-  border-right-color: #c5e9e4;
+  background: #fff !important;
+  border-right-color: #dfeae3 !important;
+  padding: 27px 15px !important;
 }
-
 .nav a {
-  color: #43615e;
+  padding: 15px 16px !important;
+  border-radius: 9px !important;
+  color: #6f8779 !important;
+  font-size: 15px !important;
 }
-
-.nav a:hover {
-  background: #edfaf7;
-}
-
+.nav a:hover { background: #f1f9f4 !important; }
 .nav a.active {
-  background: #dcf5f1;
-  border-color: #a9ded9;
-  color: #14666a;
-  box-shadow: inset 4px 0 0 var(--blue);
+  background: #eaf7f1 !important;
+  color: #147d70 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
-
-button,
-.button {
-  border-color: #b9ddd8;
-  color: #2f4b48;
-}
-
-button:hover,
-.button:hover {
-  background: #ecfaf7;
-  border-color: #7fc9c5;
-}
-
+.subnav { margin-left: 0 !important; }
+.auth-area { gap: 14px !important; }
+.auth-area .button, .auth-area button, .auth-user { font-size: 15px !important; }
+.auth-user { color: #506e5c !important; }
+button, .button { border-color: #dce9e0 !important; color: #365744; }
+button:hover, .button:hover { background: #eff8f2; border-color: #9bcbb3 !important; }
 .primary {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: white;
-  box-shadow: 0 3px 8px #41b9bc33;
+  background: #147d70 !important;
+  border-color: #147d70 !important;
+  color: #fff !important;
+  box-shadow: none !important;
 }
-
-.primary:hover {
-  background: var(--blue-dark);
-  border-color: var(--blue-dark);
+.primary:hover { background: #10685c !important; border-color: #10685c !important; }
+.danger { background: #fff1f3 !important; color: #ad2639 !important; border-color: #e7b7c0 !important; }
+.danger:hover { background: #ffe4e9 !important; }
+input, select, textarea { border-color: #dce9e0 !important; color: #203a32 !important; }
+input:hover, select:hover, textarea:hover { border-color: #9bcbb3 !important; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [role=button]:focus-visible { outline-color: #8dceae !important; }
+.hero { background: linear-gradient(135deg, #e2f3e9, #f7fcf9) !important; border-color: #dce9e0 !important; }
+.panel, .empty { border-color: #dce9e0 !important; }
+#jobs {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 245px), 1fr)) !important;
+  gap: 15px !important;
 }
-
-.hero {
-  border-color: #c5e9e4;
-  background: linear-gradient(135deg, #dcf5f1, #f5fffd);
+.job {
+  --card-accent: #678578;
+  --card-surface: #fff;
+  --card-border: #dce8df;
+  --card-soft: #eff5f1;
+  padding: 17px 18px !important;
+  border: 1px solid var(--card-border) !important;
+  border-top: 3px solid var(--card-accent) !important;
+  border-radius: 11px !important;
+  background: var(--card-surface) !important;
+  box-shadow: 0 4px 14px #253e2a03 !important;
 }
-
-.panel,
-.job,
-.empty {
-  border-color: #c5e9e4;
+/* data-status is maintained by the existing status-save/rollback logic. */
+.job:has(.job-status-select[data-status=saved]) {
+  --card-accent: #7860a4; --card-surface: #f7f3fc;
+  --card-border: #ded1ee; --card-soft: #eee6f8;
 }
-
-.job:hover {
-  border-color: #7fc9c5;
+.job:has(.job-status-select[data-status=applied]) {
+  --card-accent: #27814d; --card-surface: #f0f9f1;
+  --card-border: #bedfc5; --card-soft: #e2f1e3;
 }
-
-input,
-select,
-textarea {
-  border-color: #b9ddd8;
-  color: #17212a;
+.job:has(.job-status-select[data-status=interview]) {
+  --card-accent: #286c9c; --card-surface: #f3f8fc;
+  --card-border: #c7ddeb; --card-soft: #e5eff7;
 }
-
-input:hover,
-select:hover,
-textarea:hover {
-  border-color: #7fc9c5;
+.job:has(.job-status-select[data-status=offer]) {
+  --card-accent: #926711; --card-surface: #fffbef;
+  --card-border: #ead8a9; --card-soft: #f7edcd;
 }
-
-.job-status-select {
-  background: #e3f7f4;
-  border-color: #a9ded9;
-  color: #14666a;
+.job:has(.job-status-select[data-status=rejected]) {
+  --card-accent: #a45364; --card-surface: #fcf5f6;
+  --card-border: #e8cfd5; --card-soft: #f5e7eb;
 }
-
-.status {
-  background: #e3f7f4;
+.job:has(.job-status-select[data-status=closed]) {
+  --card-accent: #7b8188; --card-surface: #f5f6f7;
+  --card-border: #d9dce0; --card-soft: #e9ebee;
+}
+.job h2 { margin: 10px 0 9px !important; font-size: 18px !important; line-height: 1.4; }
+.job .job-title { color: var(--card-accent) !important; font-size: 18px !important; }
+.job .job-title:hover { background: transparent !important; text-decoration: underline; }
+.job .company { margin: 0 0 11px !important; font-size: 13px !important; color: #64816e !important; }
+.job .meta { font-size: 11px !important; margin: 3px 0 !important; }
+.job .actions { padding-top: 14px !important; border-color: var(--card-border) !important; gap: 8px !important; }
+.job .actions button, .job .actions .button { padding: 7px 9px !important; font-size: 11px !important; }
+.job-status-control { gap: 4px !important; }
+.job-status-control label { font-size: 10px !important; color: #7d9183 !important; }
+.job .job-status-select {
+  padding: 6px 8px !important; font-size: 11px !important;
+  background: var(--card-soft) !important;
+  color: var(--card-accent) !important; border-color: var(--card-border) !important;
+}
+.job-status-message { font-size: 10px !important; }
+.add-header, .letter-editor-header { border-color: #dce9e0 !important; }
+.add-header h2, .detail-section h2, .preview h3 { color: #245b43 !important; }
+.modal-tabs, .add-footer, .letter-editor-footer, .letter-editor-body, #add-fields {
+  background: #f0f8f3 !important; border-color: #dce9e0 !important;
+}
+.modal-tabs button { background: #fff !important; }
+.modal-tabs button[aria-selected=true] { background: #147d70 !important; color: #fff !important; }
+.modes button[aria-pressed=true], .detail-meta, .letter-summary, .drop-zone {
+  background: #eaf7f1 !important; border-color: #cce4d4 !important; color: #35664a !important;
+}
+.preview, #job-letter { box-shadow: inset 3px 0 0 #a3d5b8 !important; border-color: #dce9e0 !important; }
+.source-status, .status { background: #eaf7f1 !important; color: #35664a; }
+.source-status.error, .status.error { background: #fff0f2 !important; color: #a62739 !important; }
+.source-status.success, .status.success { background: #e7f8ee !important; color: #1f6c4d !important; }
+@media (max-width: 760px) {
+  :root { --header-height: 96px !important; }
+  .site-header { height: auto !important; min-height: 96px; flex-wrap: wrap; gap: 8px; padding: 10px 0; }
+  .brand { font-size: 20px !important; }
+  #breadcrumb { display: none !important; }
+  .auth-area { margin-left: auto; gap: 8px !important; }
+  .auth-area .button, .auth-area button, .auth-user { font-size: 13px !important; }
+  .app { grid-template-columns: 1fr !important; }
+  .sidebar { position: static !important; height: auto !important; padding: 10px 12px !important; border-bottom: 1px solid #dce9e0 !important; }
+  .nav { display: flex !important; overflow-x: auto; gap: 5px !important; }
+  .nav a { flex: 0 0 auto; font-size: 14px !important; padding: 11px 13px !important; }
+  #jobs { grid-template-columns: 1fr !important; }
 }
