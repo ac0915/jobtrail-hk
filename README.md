@@ -2,6 +2,7 @@
 
 [開啟 JobTrail HK](https://jobtrail-hk-staging.onrender.com/) — 本網站部署於 Render，閒置後首次開啟可能需要約 30 秒啟動，實際等待時間可能更長，請耐心等候。
 
+[觀看示範影片](https://drive.google.com/drive/folders/1zx7pNfILYH_sVez3zgMnXvwCoiXmWpQd?usp=sharing) — 了解如何使用 JobTrail HK 匯入職位、管理求職信及追蹤申請進度。
 ## 繁體中文
 
 ### 關於專案
@@ -67,6 +68,8 @@ JobTrail HK 是為香港求職者而設的求職申請管理工具，而不是�
 ## English
 
 [Try JobTrail HK](https://jobtrail-hk-staging.onrender.com/) — Hosted on Render. The first visit after a period of inactivity may take around 30 seconds to load, sometimes longer. Thank you for your patience.
+
+[Watch the demo video](https://drive.google.com/drive/folders/1zx7pNfILYH_sVez3zgMnXvwCoiXmWpQd?usp=sharing) — See how to import job listings, manage cover letters, and track application progress with JobTrail HK.
 
 ### About
 
