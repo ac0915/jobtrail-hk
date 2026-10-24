@@ -5,39 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Login | JobTrail HK</title>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f5fffd;color:#17212a;font-family:Arial,sans-serif}.card{width:min(100%,560px);padding:48px 56px;background:white;border:1px solid #c5e9e4;border-radius:32px;box-shadow:0 8px 36px #163a3210}h1{text-align:center;font-size:27px;margin:0 0 36px}.brand{text-align:center;font-size:13px;color:#657671;margin-bottom:14px}label{display:block;font-size:14px;margin-bottom:9px}.field{margin-bottom:22px}input{width:100%;border:1px solid transparent;border-radius:15px;background:#f6f7f7;padding:20px;font:inherit;color:inherit}input:focus{outline:2px solid #41b9bc;outline-offset:1px;background:#fff}.password{position:relative}.password input{padding-right:76px}.toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:none;padding:8px;color:#29676b;cursor:pointer}button{font:inherit}button:focus-visible,a:focus-visible{outline:3px solid #41b9bc;outline-offset:3px}.primary{width:100%;border:0;border-radius:15px;background:#030b32;color:white;padding:20px;font-size:19px;font-weight:600;cursor:pointer;margin-top:12px}.primary:disabled{opacity:.55;cursor:wait}.switch{text-align:center;margin:24px 0 0;font-size:14px;color:#68736f}.link{border:0;background:none;color:#08123d;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:4px}.hint{font-size:12px;color:#657671;line-height:1.5;margin:8px 0 0}.message{font-size:14px;line-height:1.5;color:#9d273a;margin:18px 0 0;overflow-wrap:anywhere} [hidden]{display:none!important}@media(max-width:480px){body{padding:16px}.card{padding:32px 24px;border-radius:26px}}
+:root{--mint:#147d70;--ink:#203a32;--muted:#74857a;--line:#dce9e0;--pale:#eaf7f1}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fbfdfb;color:var(--ink);font:14px system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select{font:inherit}a{color:inherit;text-decoration:none}button{cursor:pointer}header{max-width:1180px;margin:auto;padding:25px 30px;display:flex;justify-content:space-between;align-items:center;gap:18px}.site-brand{display:flex;align-items:center;gap:9px;font-size:21px;font-weight:800;letter-spacing:-.7px}.mark{width:31px;height:31px;display:grid;place-items:center;background:var(--mint);color:white;border-radius:9px}.header-actions{display:flex;align-items:center;gap:18px}.back{font-size:12px;color:var(--muted)}select{border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);padding:9px;font-size:12px}.layout{max-width:1080px;min-height:calc(100vh - 155px);margin:auto;padding:35px 30px 65px;display:grid;grid-template-columns:425px minmax(0,1fr);align-items:center;gap:85px}.card{padding:37px 36px;background:white;border:1px solid var(--line);border-radius:19px;box-shadow:0 15px 40px #254e3304}.eyebrow{font-size:9px;letter-spacing:2px;color:var(--mint);margin:0 0 16px}h1{font-size:30px;letter-spacing:-1px;line-height:1.35;margin:0 0 12px}.subtitle{font-size:12px;color:var(--muted);line-height:1.9;margin:0 0 28px}label{font-size:12px;display:block;margin-bottom:8px}.field{margin-bottom:20px}input{width:100%;border:1px solid var(--line);border-radius:8px;padding:13px 14px;background:#fcfefc;color:var(--ink);font-size:13px}input::placeholder{color:#9ba99f}.password{position:relative}.password input{padding-right:70px}.toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:11px;color:var(--mint);padding:7px}.primary{border:1px solid var(--mint);background:var(--mint);color:white;border-radius:8px;padding:14px 18px;font-size:13px;font-weight:650;width:100%}.primary:hover{background:#10685c}.primary:disabled{opacity:.55;cursor:wait}.switch{margin:22px 0 0;text-align:center;font-size:12px;color:var(--muted);line-height:1.9}.link{border:0;background:none;padding:3px;color:var(--mint);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}.hint{font-size:11px;line-height:1.7;color:var(--muted);margin:8px 0 0}.message{padding:12px 0 0;font-size:12px;line-height:1.8;color:#8c3546;white-space:pre-wrap;overflow-wrap:anywhere}.privacy{border-top:1px solid #edf2ee;margin-top:24px;padding-top:17px;font-size:10px;line-height:1.9;color:#83958a}.intro h2{font-size:35px;line-height:1.4;letter-spacing:-1px;margin:0 0 15px;color:var(--mint)}.intro>p{font-size:13px;line-height:1.9;color:var(--muted);margin:0 0 28px}.art{background:linear-gradient(140deg,#d8eee2,#f1f9f3);border-radius:21px;padding:24px 22px}.mock{background:white;border:1px solid #d9e9de;border-radius:11px;padding:20px;box-shadow:0 14px 30px #254e3310}.mockhead{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:20px;font-size:11px}.mockhead small{font-size:10px;color:#8ea496}.job{display:flex;align-items:center;gap:11px}.icon{width:35px;height:35px;background:var(--pale);color:var(--mint);font-size:13px;font-weight:700;display:grid;place-items:center;border-radius:8px}.jobinfo{flex:1;min-width:0}.jobinfo b{font-size:12px}.jobinfo small{display:block;font-size:10px;color:var(--muted);margin-top:5px}.tag{font-size:10px;background:#e7eff8;color:#286c9c;padding:5px 7px;border-radius:5px}.divider{height:1px;background:#edf3ef;margin:18px 0}.minirow{display:flex;gap:10px;align-items:flex-start;font-size:11px;line-height:1.8;color:#6c8374;margin:10px 0}.check{color:var(--mint);font-weight:700}.minirow b{color:#385b48;font-weight:600}.points{display:flex;gap:17px;font-size:11px;color:#688571;margin-top:23px;flex-wrap:wrap}.points span:before{content:'✓';color:var(--mint);margin-right:6px}footer{max-width:1180px;margin:auto;padding:18px 30px 28px;border-top:1px solid #e6eee8;font-size:10px;color:#94a297}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #8cd2b5;outline-offset:3px}[hidden]{display:none!important}@media(max-width:850px){.layout{grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:35px}.intro h2{font-size:28px}.art{padding:17px 12px}.mock{padding:16px}.tag{display:none}.card{padding:30px 28px}}@media(max-width:650px){header{padding:20px;flex-wrap:wrap}.site-brand{font-size:19px}.header-actions{gap:12px}.layout{grid-template-columns:1fr;max-width:480px;gap:35px;padding:20px 20px 45px;min-height:auto}.card{padding:29px 25px}.intro h2{font-size:29px}.intro>p{font-size:12px}.points{gap:13px}footer{padding:18px 20px 25px}h1{font-size:28px}}
 </style>
 </head>
 <body>
+<header><a class="site-brand" href="/"><span class="mark" aria-hidden="true">J</span>JobTrail HK</a><div class="header-actions"><a class="back" href="/" data-i="home">Home</a><select id="language" aria-label="Language"><option value="zh-Hant">繁體中文</option><option value="en">English</option><option value="zh-Hans">简体中文</option></select></div></header>
+<div class="layout">
 <main class="card">
-<p class="brand">JobTrail HK</p>
+<p class="eyebrow">YOUR NEXT OPPORTUNITY</p>
 <h1 id="heading">Login</h1>
+<p class="subtitle" id="subtitle">Sign in to keep your job search organised.</p>
 <form id="auth-form">
-<div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" required></div>
-<div class="field"><label for="password">Password</label><div class="password"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required><button class="toggle" type="button" aria-controls="password" aria-pressed="false">Show</button></div><p id="password-hint" class="hint" hidden>Use 8–20 characters.</p></div>
-<div id="confirm-field" class="field" hidden><label for="confirm">Confirm password</label><input id="confirm" type="password" autocomplete="new-password" maxlength="20"></div>
+<div class="field"><label for="email" data-i="email">Email</label><input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="username" maxlength="254" required></div>
+<div class="field"><label for="password" data-i="password">Password</label><div class="password"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required><button class="toggle" type="button" aria-controls="password" aria-pressed="false">Show</button></div><p id="password-hint" class="hint" hidden>Use 8–20 characters.</p></div>
+<div id="confirm-field" class="field" hidden><label for="confirm" data-i="confirm">Confirm password</label><input id="confirm" type="password" autocomplete="new-password" maxlength="20"></div>
 <button id="submit" class="primary" type="submit" disabled>Login</button>
-<p class="switch"><span id="switch-copy">No account yet?</span> <button id="switch" class="link" type="button">Register</button> <a class="link" href="/forgot-password">Forgot password?</a></p>
+<p class="switch"><span id="switch-copy">No account yet?</span> <button id="switch" class="link" type="button">Register</button></p>
+<p class="switch"><a class="link" href="/forgot-password">Forgot password?</a></p>
 <p class="switch"><button id="resend" class="link" type="button" hidden>Resend verification email</button></p>
 </form>
 <p id="message" class="message" role="status" aria-live="polite"></p>
+<p class="privacy" data-i="privacy">Your saved jobs, private notes and cover letters, organised together.</p>
+<noscript><p class="hint">JavaScript is required to sign in. 請啟用 JavaScript 以登入。</p></noscript>
 </main>
+<aside class="intro" aria-label="JobTrail HK introduction"><p class="eyebrow">LESS SEARCHING. MORE CLARITY.</p><h2 data-i="artTitle">Every application. A clear next step.</h2><p data-i="artText">Return to your workspace and pick up where you left off, with job details and preparation in one place.</p><div class="art"><div class="mock"><div class="mockhead"><b data-i="records">My job records</b><small data-i="sample">Sample data</small></div><div class="job"><span class="icon" aria-hidden="true">H</span><div class="jobinfo"><b>Frontend Developer</b><small>Harbour Studio · Hong Kong</small></div><span class="tag" data-i="interview">Interview</span></div><div class="divider"></div><div class="minirow"><span class="check" aria-hidden="true">✓</span><div><b data-i="progressTitle">Know your progress</b><br><span data-i="progressText">From application to interview, see where you stand.</span></div></div><div class="minirow"><span class="check" aria-hidden="true">✓</span><div><b data-i="prepareTitle">Keep preparation together</b><br><span data-i="prepareText">Notes and cover letters stay with the right job.</span></div></div></div></div><div class="points"><span data-i="save">Save jobs</span><span data-i="track">Track progress</span><span data-i="notes">Private notes</span></div></aside>
+</div>
+<footer>JobTrail HK · <span data-i="footer">Your next step, organised.</span></footer>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-let registering=false,enabled=false,busy=false,redirecting=false;
-function message(text){$('message').textContent=text;}
+const copy={
+ en:{home:'Home',email:'Email',password:'Password',confirm:'Confirm password',login:'Log in',register:'Sign up',welcome:'Welcome back.',create:'Start your next chapter.',loginIntro:'Sign in to keep your job search organised.',registerIntro:'Create an account to keep jobs, progress and preparation together.',noAccount:'No account yet?',hasAccount:'Already have an account?',show:'Show',hide:'Hide',hint:'Use 8–20 characters.',forgot:'Forgot password?',resend:'Resend verification email',privacy:'Your saved jobs, private notes and cover letters, organised together.',artTitle:'Every application. A clear next step.',artText:'Return to your workspace and pick up where you left off, with job details and preparation in one place.',records:'My job records',sample:'Sample data',interview:'Interview',progressTitle:'Know your progress',progressText:'From application to interview, see where you stand.',prepareTitle:'Keep preparation together',prepareText:'Notes and cover letters stay with the right job.',save:'Save jobs',track:'Track progress',notes:'Private notes',footer:'Your next step, organised.',wait:'Please wait…',mismatch:'Passwords do not match.',created:'Account created. Check your email and click the verification link.',rate:'Too many attempts. Please try again later.',failed:'The request could not be completed.',disabled:'Email sign-in is not enabled on this instance yet.',connection:'Unable to connect to the app. Please try again later.',preview:'Sign-in requires the app server and multi-user mode.'},
+ 'zh-Hant':{home:'返回首頁',email:'電郵地址',password:'密碼',confirm:'確認密碼',login:'登入',register:'免費註冊',welcome:'歡迎回來。',create:'開始整理，下一個機會。',loginIntro:'登入後，繼續整理你的求職進度。',registerIntro:'建立帳戶，將職位、申請進度與準備資料放在一起。',noAccount:'還沒有帳戶？',hasAccount:'已有帳戶？',show:'顯示',hide:'隱藏',hint:'使用 8–20 個字元。',forgot:'忘記密碼？',resend:'重新傳送驗證電郵',privacy:'你的職位、私人備註與求職信，一個地方整理。',artTitle:'每一次申請，都有清晰的下一步。',artText:'不用重新翻找職位連結，或回想申請到哪一步。回到自己的工作區，接著準備下一個機會。',records:'我的求職紀錄',sample:'示範資料',interview:'面試中',progressTitle:'進度已整理',progressText:'從申請到面試，知道自己走到哪一步。',prepareTitle:'準備不散落',prepareText:'私人備註與求職信，跟著對應職位放好。',save:'儲存職位',track:'追蹤進度',notes:'私人備註',footer:'求職有條理，下一步更清晰。',wait:'請稍候…',mismatch:'兩次密碼不一致，請再次確認。',created:'帳戶已建立，請開啟電郵中的驗證連結後再登入。',rate:'嘗試次數過多，請稍後再試。',failed:'無法完成要求，請稍後再試。',disabled:'此網站尚未啟用電郵登入。',connection:'無法連接服務，請稍後再試。',preview:'登入需要透過網站伺服器並啟用多使用者模式。'},
+ 'zh-Hans':{home:'返回首页',email:'邮箱地址',password:'密码',confirm:'确认密码',login:'登录',register:'免费注册',welcome:'欢迎回来。',create:'开始整理，下一个机会。',loginIntro:'登录后，继续整理你的求职进度。',registerIntro:'创建账户，将职位、申请进度与准备资料放在一起。',noAccount:'还没有账户？',hasAccount:'已有账户？',show:'显示',hide:'隐藏',hint:'使用 8–20 个字符。',forgot:'忘记密码？',resend:'重新发送验证邮件',privacy:'你的职位、私人备注与求职信，一个地方整理。',artTitle:'每一次申请，都有清晰的下一步。',artText:'不用重新翻找职位链接，或回想申请到哪一步。回到自己的工作区，接着准备下一个机会。',records:'我的求职记录',sample:'示例数据',interview:'面试中',progressTitle:'进度已整理',progressText:'从申请到面试，知道自己走到哪一步。',prepareTitle:'准备不散落',prepareText:'私人备注与求职信，跟着对应职位放好。',save:'保存职位',track:'跟踪进度',notes:'私人备注',footer:'求职有条理，下一步更清晰。',wait:'请稍候…',mismatch:'两次密码不一致，请再次确认。',created:'账户已创建，请打开邮件中的验证链接后再登录。',rate:'尝试次数过多，请稍后再试。',failed:'无法完成请求，请稍后再试。',disabled:'此网站尚未启用邮箱登录。',connection:'无法连接服务，请稍后再试。',preview:'登录需要通过网站服务器并启用多用户模式。'}
+};
+let language='zh-Hant';
+try{const saved=localStorage.getItem('jobtrail-language');if(Object.hasOwn(copy,saved))language=saved;}catch(error){}
+const t=key=>copy[language][key];
+let registering=location.pathname==='/register',enabled=false,busy=false,redirecting=false;
+let messageKey=null;
+function message(text,key=null){messageKey=key;$('message').textContent=text;}
+function showMessage(key){message(t(key),key);}
+function renderLanguage(){
+ document.documentElement.lang=language;$('language').value=language;
+ document.querySelectorAll('[data-i]').forEach(node=>{node.textContent=t(node.dataset.i);});
+ $('heading').textContent=t(registering?'create':'welcome');
+ $('subtitle').textContent=t(registering?'registerIntro':'loginIntro');
+ document.title=t(registering?'register':'login')+' | JobTrail HK';
+ $('submit').textContent=t(registering?'register':'login');
+ $('switch-copy').textContent=t(registering?'hasAccount':'noAccount');
+ $('switch').textContent=t(registering?'login':'register');
+ $('password-hint').textContent=t('hint');
+ document.querySelector('a[href="/forgot-password"]').textContent=t('forgot');
+ $('resend').textContent=t('resend');
+ document.querySelector('.toggle').textContent=t($('password').type==='text'?'hide':'show');
+ if(messageKey)$('message').textContent=t(messageKey);
+}
 function setMode(){
- $('heading').textContent=registering?'Create account':'Login';
- document.title=(registering?'Register':'Login')+' | JobTrail HK';
- $('submit').textContent=registering?'Register':'Login';
- $('switch-copy').textContent=registering?'Already have an account?':'No account yet?';
- $('switch').textContent=registering?'Login':'Register';
  $('confirm-field').hidden=!registering;$('confirm').required=registering;
  $('password-hint').hidden=!registering;
  $('password').minLength=registering?8:1;$('password').maxLength=registering?20:256;
  $('password').autocomplete=registering?'new-password':'current-password';
+ $('password').type='password';document.querySelector('.toggle').setAttribute('aria-pressed','false');
  $('password').value='';$('confirm').value='';message('');$('resend').hidden=true;
+ renderLanguage();
 }
 function signedIn(){
  redirecting=true;busy=true;
@@ -50,30 +81,32 @@ async function api(path,options={}){
  const data=await response.json().catch(()=>({}));
  if(!response.ok){
   const detail=data.detail;
-  const text=response.status===429?'Too many attempts. Please try again later.':typeof detail==='string'?detail:Array.isArray(detail)?detail.map(x=>x.msg).join(' '):'The request could not be completed.';
+  const text=response.status===429?t('rate'):typeof detail==='string'?detail:Array.isArray(detail)?detail.map(x=>x.msg).join(' '):t('failed');
   const error=new Error(text);error.status=response.status;throw error;
  }return data;
 }
-$('switch').addEventListener('click',()=>{if(!busy){registering=!registering;setMode();}});
+$('language').addEventListener('change',event=>{language=event.target.value;try{localStorage.setItem('jobtrail-language',language);}catch(error){}renderLanguage();});
+$('switch').addEventListener('click',()=>{if(!busy){registering=!registering;setMode();const url=new URL(location.href);url.pathname=registering?'/register':'/login';history.pushState(null,'',url);}});
+window.addEventListener('popstate',()=>{const wants=location.pathname==='/register';if(wants!==registering){registering=wants;setMode();}});
 document.querySelector('.toggle').addEventListener('click',event=>{
  const show=$('password').type==='password';$('password').type=show?'text':'password';
- event.currentTarget.textContent=show?'Hide':'Show';event.currentTarget.setAttribute('aria-pressed',String(show));
+ event.currentTarget.textContent=t(show?'hide':'show');event.currentTarget.setAttribute('aria-pressed',String(show));
 });
 $('resend').addEventListener('click',async()=>{
  if(busy)return;
- busy=true;$('resend').disabled=true;message('Please wait…');
+ busy=true;$('resend').disabled=true;$('switch').disabled=true;showMessage('wait');
  try{
   const data=await api('/auth/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim()})});
   message(data.message);$('resend').hidden=true;
  }catch(error){message(error.message);}
- finally{busy=false;$('resend').disabled=false;}
+ finally{busy=false;$('resend').disabled=false;$('switch').disabled=false;}
 });
 $('auth-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!enabled||busy)return;
- if(registering&&$('password').value!==$('confirm').value){message('Passwords do not match.');$('confirm').focus();return;}
- busy=true;$('submit').disabled=true;$('switch').disabled=true;message('Please wait…');
+ if(registering&&$('password').value!==$('confirm').value){showMessage('mismatch');$('confirm').focus();return;}
+ busy=true;$('submit').disabled=true;$('switch').disabled=true;showMessage('wait');
  try{await api('/auth/'+(registering?'register':'login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});
-  if(registering){registering=false;setMode();message('Account created. Check your email and click the verification link.');}
+  if(registering){registering=false;setMode();const url=new URL(location.href);url.pathname='/login';history.replaceState(null,'',url);showMessage('created');}
   else{signedIn();}}
  catch(error){
   message(error.message);
@@ -81,14 +114,15 @@ $('auth-form').addEventListener('submit',async event=>{
  }
  finally{if(!redirecting){busy=false;$('submit').disabled=!enabled;$('switch').disabled=false;}}
 });
+setMode();
 (async()=>{
- if(location.protocol==='file:'){message('Design preview only. Sign-in requires the app server and multi-user mode.');return;}
+ if(location.protocol==='file:'){showMessage('preview');return;}
  try{
   const config=await api('/api-info');enabled=config.multi_user_enabled===true;
-  if(!enabled){message('Email sign-in is not enabled on this instance yet.');return;}
+  if(!enabled){showMessage('disabled');return;}
   try{await api('/auth/me');signedIn();}catch(error){if(error.status!==401)message(error.message);}
   if(!redirecting)$('submit').disabled=false;
- }catch(error){message('Unable to connect to the app. Please try again later.');}
+ }catch(error){showMessage('connection');}
 })();
 </script>
 </body>
