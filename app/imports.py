@@ -123,20 +123,25 @@ def split_sections(description):
         "job responsibilities": "responsibilities", "duties": "responsibilities",
         "job duties": "responsibilities", "工作職責": "responsibilities",
         "工作內容": "responsibilities", "職責": "responsibilities",
+        "what you will do": "responsibilities",
         "requirements": "requirements", "job requirements": "requirements",
         "qualifications": "requirements", "職位要求": "requirements",
         "任職要求": "requirements", "資格": "requirements",
+        "what you will need": "requirements",
         "nice to have": "other", "benefits": "other", "what we offer": "other",
         "how to apply": "other", "employee type": "other", "employment type": "other",
         "apply job": "other", "加分條件": "other", "福利": "other",
         "技能": "other", "更多資料": "other", "工種": "other", "工作地點": "other",
         "待遇": "other", "職場攻略": "other", "分享這份工作": "other", "公司概覽": "other",
+        "d&i statement": "other",
     }
     parts = {"responsibilities": [], "requirements": []}
     current = None
     for line in (description or "").splitlines():
         heading = line.strip().rstrip(":：").lower()
-        if heading in headings:
+        if heading.startswith("talent acquisition based on " ):
+            current = "other"
+        elif heading in headings:
             current = headings[heading]
         elif current in parts:
             parts[current].append(line)
@@ -270,7 +275,15 @@ def find_main_job(lines):
     return None
 
 def is_employment_type(value):
-    return value.strip().lower() in {"全職", "長工", "合約", "兼職", "實習", "長工, 全職", "全職 +1"}
+    normalized = re.sub(r"\s*\+\s*\d+\s*$", "", value.strip().casefold())
+    parts = re.split(r"\s*[,，、]\s*", normalized)
+    allowed = {
+        "全職", "長工", "合約", "合約更新", "兼職", "實習", "臨時",
+        "應届畢業生", "應屆畢業生", "应届毕业生",
+        "full-time", "part-time", "permanent", "contract", "contract renewal",
+        "internship", "temporary", "fresh graduate", "fresh graduates",
+    }
+    return bool(parts) and all(part in allowed for part in parts)
 
 def is_salary_line(value):
     return bool(PASTE_SALARY_LINE.search(value) or value.lower().startswith("pay:"))
