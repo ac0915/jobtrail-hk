@@ -139,7 +139,8 @@ def split_sections(description):
     current = None
     for line in (description or "").splitlines():
         heading = line.strip().rstrip(":：").lower()
-        if heading.startswith("talent acquisition based on " ):
+        if heading.startswith(("talent acquisition based on ", "our office is at ",
+                               "major stops of company coach", "personal data collected")):
             current = "other"
         elif heading in headings:
             current = headings[heading]
@@ -160,11 +161,35 @@ def normalize_paste(value):
     lines = [" ".join(line.split()) for line in value.splitlines()]
     return [line for line in lines if line]
 
+def find_ct_english_job(lines):
+    """Recognise the English description/overview tabs with a complete header."""
+    markers = {"jobs description", "job description"}
+    indexes = [i for i, line in enumerate(lines) if line.casefold().rstrip(":：") in markers]
+    candidates = []
+    for pos, index in enumerate(indexes):
+        end = indexes[pos + 1] - 2 if pos + 1 < len(indexes) else len(lines)
+        if index < 2 or index + 1 >= end or lines[index + 1].casefold() != "company overview":
+            continue
+        header = []
+        for line in lines[index - 2:index]:
+            match = re.fullmatch(r'\[([^\]\n]+)\]\(https?://[^\n]+\)', line)
+            header.append(match.group(1) if match else line)
+        if any(not line or len(line) > 200 for line in header) or header[0] == header[1]:
+            continue
+        body = lines[index + 2:end]
+        headings = {line.casefold().rstrip(":：") for line in body}
+        if not {"responsibilities", "requirements"} <= headings:
+            continue
+        candidates.append({"site": "CTgoodjobs", "header": header, "body": body})
+    if len(candidates) > 1:
+        raise HTTPException(status_code=422, detail="偵測到多份完整職位，請只貼上正在查看的職位，避免混合資料。")
+    return candidates[0] if candidates else None
+
 def find_ct_main_job(lines):
     """Identify the opened CTgoodjobs job, ignoring recommended jobs."""
     work_indexes = [index for index, line in enumerate(lines) if line == "工作內容"]
     if not work_indexes:
-        return None
+        return find_ct_english_job(lines)
     sticky_title = None
     sticky_company = None
     for index in range(len(lines) - 2, -1, -1):
